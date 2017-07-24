@@ -46,27 +46,36 @@ class FeatureExtract(Features):
 		self.prepare_features()
 		self.rs = randomState
 		self.ts = testSize
-		labels, features, featureList = self._parse_features(featureList)
-		self.feature_splits(labels, features, featureList)
+		labels, features = self._parse_features(featureList)
+		# print len(labels)
+		self.feature_splits(labels, features)
 
-	def feature_splits(self, labels, features, featureList):
+	def feature_splits(self, labels, features):
 		X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=self.ts, random_state=self.rs)
-		df_train = pd.DataFrame(X_train, columns=featureList[1::])
-		df_train[self.targetCol] = np.array(y_train)
-		df_test = pd.DataFrame(X_test, columns=featureList[1::])
-		df_test[self.targetCol] = np.array(y_test)
-		return df_train, df_test
+		self.df_train = pd.DataFrame(X_train, columns=self.featureList[1::])
+		self.df_train[self.targetCol] = np.array(y_train, dtype=int)
+		self.df_test = pd.DataFrame(X_test, columns=self.featureList[1::])
+		self.df_test[self.targetCol] = np.array(y_test, dtype=int)
 
 	def _parse_features(self, featureList):
-		if featureList != '*':
-			featureList = list(self.targetCol) + self.featureCols
+		if featureList == '*':
+			self.featureList = [self.targetCol] + self.featureCols
 		else:
 			if self.targetCol not in featureList:
-				featureList = list(self.targetCol) + featureList
-		data = featureFormat(self.data_dict, featureList, sort_keys=True)
-		return targetFeatureSplit(data), featureList
+				self.featureList = [self.targetCol] + featureList
+		# print featureList
+		data = featureFormat(self.data_dict, self.featureList, sort_keys=True)
+		return targetFeatureSplit(data)
+
+	@property
+	def train(self):
+		return self.df_train
+
+	@property
+	def test(self):
+		return self.df_test
 
 
-if __name__ == '__main__':
-	f = Features()
-	print f.dataframe
+# if __name__ == '__main__':
+# 	f = FeatureExtract()
+# 	# print f.train.head(n=1)
