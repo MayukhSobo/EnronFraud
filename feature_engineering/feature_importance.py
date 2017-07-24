@@ -18,6 +18,9 @@ class Importance:
 	def get_importance_rf(self, cv=True):
 		pass
 
+	def K_Best(self, k, eval_func):
+		pass
+
 
 if __name__ == '__main__':
 	s = Importance(algo='XGBoost')
