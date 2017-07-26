@@ -28,6 +28,8 @@ class Features:
     # 	index=self.data_dict.keys())
 
     def prepare_features(self, rCols='email_address'):
+        if not isinstance(rCols, list):
+            rCols = [rCols]
         for each in rCols:
             self.featureCols.remove(each)
         self.featureCols.remove(self.targetCol)
