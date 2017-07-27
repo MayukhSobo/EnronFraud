@@ -20,7 +20,7 @@ class Importance:
 
     def get_importance_xgboost(self, file_path=None, save=True, cv=False):
         """
-        Function crates plot of feature importances
+        Function crates plot of feature importance
         using xgboost model if save=True. It also can
         perform parameter tuning if cv=True.
 
@@ -31,7 +31,8 @@ class Importance:
         """
 
         # Default XGB parameters
-        xgb_params = {"objective": "binary:logistic",
+        xgb_params = {
+                      "objective": "binary:logistic",
                       "eta": 0.01,
                       "max_depth": 8,
                       'colsample_bytree': 0.8,
@@ -102,7 +103,6 @@ class Importance:
             train_features = np.array(self.train_data.drop(['poi'], axis=1))
             train_labels = self.train_data.loc[:, 'poi'].values
             select_k_best.fit(train_features, train_labels)
-            # print dict(zip(self.features[select_k_best.get_support(indices=True)]))
             best_features = self.features[select_k_best.get_support(indices=True)]
             best_scores = select_k_best.scores_[select_k_best.get_support(indices=True)]
             top_k_features = dict(zip(best_features, best_scores))
