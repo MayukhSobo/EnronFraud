@@ -9,7 +9,7 @@ from collections import OrderedDict
 class Importance:
 
     def __init__(self, algo):
-        if algo.lower() not in ['xgboost', 'random_forest', 'k_best']:
+        if algo.lower() not in ['xgboost', 'random_forest', 'k_best', '*']:
             raise NotImplementedError("Algorithm support not implemented")
         # // TODO implementation for save = False
         _data = FeatureExtract()
@@ -52,7 +52,7 @@ class Importance:
             gbdt = xgb.train(xgb_params, dtrain, num_boost_round)
             importance = sorted(gbdt.get_fscore().iteritems(), key=operator.itemgetter(1), reverse=True)
             if not save:
-                return importance
+                return dict(importance)
             else:
                 import pandas as pd
                 from matplotlib import pylab as plt
@@ -76,7 +76,7 @@ class Importance:
         for each in list(np.argsort(importance)[::-1]):
             ftr_imps[self.features[each]] = importance[each]
         if not save:
-            return ftr_imps
+            return dict(ftr_imps)
         else:
             from matplotlib import pylab as plt
             plt.figure(figsize=(17, 10))
@@ -109,7 +109,11 @@ class Importance:
             return dict(sorted(top_k_features.iteritems(), key=operator.itemgetter(1), reverse=True))
 
 if __name__ == '__main__':
-    imp = Importance(algo='k_best')
-    print imp.K_Best(5, 'classif')
-    # imp.get_importance_xgboost(file_path='feature_importance_xgboost.png', save=True)
-    # imp.get_importance_rf(file_path='feature_importance_rf.png', save=True)
+    imp = Importance(algo='*')
+    print '\t\t\t' + '-' * 5 + ' Top 5 features ' + '-' * 5
+    print '\n\tK_best algorithm'
+    print imp.K_Best(5, 'classif').keys()
+    print '\n\tXGBoost algorithm'
+    print imp.get_importance_xgboost(save=False).keys()[:5]
+    print '\n\tRandom Forest algorithm'
+    print imp.get_importance_rf(save=False).keys()[:5]
