@@ -72,8 +72,6 @@ class Importance:
         forest = ExtraTreesClassifier(n_estimators=250, random_state=42)
         forest.fit(X_train, y_train)
         importances = forest.feature_importances_
-        std = np.std([tree.feature_importances_ for tree in forest.estimators_], axis=0)
-        # indices = np.argsort(importances)[::-1]
         ftr_imps = OrderedDict()
         for each in list(np.argsort(importances)[::-1]):
             ftr_imps[self.features[each]] = importances[each]
@@ -89,12 +87,11 @@ class Importance:
             plt.xlabel('relative importance')
             plt.gcf().savefig(file_path)
 
-
     def K_Best(self, k, eval_func):
         pass
 
 
-if __name__ == '__main__':
-    imp = Importance(algo='XGBoost')
+# if __name__ == '__main__':
+    # imp = Importance(algo='XGBoost')
     # imp.get_importance_xgboost(file_path='feature_importance_xgboost.png', save=True)
-    imp.get_importance_rf(file_path='feature_importance_rf.png', save=True)
+    # imp.get_importance_rf(file_path='feature_importance_rf.png', save=True)

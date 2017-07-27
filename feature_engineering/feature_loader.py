@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from abc import ABCMeta, abstractmethod
 from sklearn.model_selection import train_test_split
-from feature_format import featureFormat, targetFeatureSplit
+from feature_format import feature_format, target_feature_split
 
 DATA_PICKLE_SOURCE = '../data/final_project_dataset.pkl'
 
@@ -69,8 +69,8 @@ class FeatureExtract(Features):
             if self.targetCol not in featureList:
                 self.featureList = [self.targetCol] + featureList
         # print featureList
-        data = featureFormat(self.data_dict, self.featureList, sort_keys=True)
-        return targetFeatureSplit(data)
+        data = feature_format(self.data_dict, self.featureList, sort_keys=True)
+        return target_feature_split(data)
 
     @property
     def train(self):
