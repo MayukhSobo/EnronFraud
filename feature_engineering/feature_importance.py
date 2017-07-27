@@ -18,12 +18,13 @@ class Importance:
         self.data = self.train_data.append(self.test_data)
         self.features = self.train_data.drop(['poi'], axis=1).columns.values
 
-    def get_importance_xgboost(self, file_path=None, save=True, cv=False):
+    def get_importance_xgboost(self, file_path=None, save=True, cv=False, k=5):
         """
         Function crates plot of feature importance
         using xgboost model if save=True. It also can
         perform parameter tuning if cv=True.
 
+        :param k:
         :param file_path: image file to save
         :param save: True for saving as image
         :param cv: True for XGBoost's param tuning
@@ -53,7 +54,7 @@ class Importance:
             gbdt = xgb.train(xgb_params, dtrain, num_boost_round)
             importance = sorted(gbdt.get_fscore().iteritems(), key=operator.itemgetter(1), reverse=True)
             if not save:
-                return dict(importance)
+                return OrderedDict(importance[:k])
             else:
                 import pandas as pd
                 from matplotlib import pylab as plt
@@ -66,7 +67,7 @@ class Importance:
                 plt.xlabel('relative importance')
                 plt.gcf().savefig(file_path)
 
-    def get_importance_rf(self, file_path=None, save=True, cv=False):
+    def get_importance_rf(self, file_path=None, save=True, cv=False, k=5):
         X_train = self.train_data.drop(['poi'], axis=1)
         X_train = np.array(X_train)
         y_train = self.train_data.loc[:, 'poi'].values
@@ -77,7 +78,7 @@ class Importance:
         for each in list(np.argsort(importance)[::-1]):
             ftr_imps[self.features[each]] = importance[each]
         if not save:
-            return dict(ftr_imps)
+            return OrderedDict(list(ftr_imps.items())[:k])
         else:
             from matplotlib import pylab as plt
             plt.figure(figsize=(17, 10))
@@ -106,7 +107,7 @@ class Importance:
             best_features = self.features[select_k_best.get_support(indices=True)]
             best_scores = select_k_best.scores_[select_k_best.get_support(indices=True)]
             top_k_features = dict(zip(best_features, best_scores))
-            return dict(sorted(top_k_features.iteritems(), key=operator.itemgetter(1), reverse=True))
+            return OrderedDict(sorted(top_k_features.iteritems(), key=operator.itemgetter(1), reverse=True))
 
 if __name__ == '__main__':
     imp = Importance(algo='*')
@@ -114,6 +115,6 @@ if __name__ == '__main__':
     print '\n\tK_best algorithm'
     print imp.K_Best(5, 'classif').keys()
     print '\n\tXGBoost algorithm'
-    print imp.get_importance_xgboost(save=False).keys()[:5]
+    print imp.get_importance_xgboost(save=False).keys()
     print '\n\tRandom Forest algorithm'
-    print imp.get_importance_rf(save=False).keys()[:5]
+    print imp.get_importance_rf(save=False).keys()
