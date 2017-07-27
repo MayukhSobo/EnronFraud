@@ -9,7 +9,7 @@ from collections import OrderedDict
 class Importance:
 
     def __init__(self, algo):
-        if algo.lower() not in ['xgboost', 'random_forest']:
+        if algo.lower() not in ['xgboost', 'random_forest', 'k_best']:
             raise NotImplementedError("Algorithm support not implemented")
         # // TODO implementation for save = False
         _data = FeatureExtract()
@@ -71,10 +71,10 @@ class Importance:
         y_train = self.train_data.loc[:, 'poi'].values
         forest = ExtraTreesClassifier(n_estimators=250, random_state=42)
         forest.fit(X_train, y_train)
-        importances = forest.feature_importances_
+        importance = forest.feature_importances_
         ftr_imps = OrderedDict()
-        for each in list(np.argsort(importances)[::-1]):
-            ftr_imps[self.features[each]] = importances[each]
+        for each in list(np.argsort(importance)[::-1]):
+            ftr_imps[self.features[each]] = importance[each]
         if not save:
             return ftr_imps
         else:
@@ -88,10 +88,28 @@ class Importance:
             plt.gcf().savefig(file_path)
 
     def K_Best(self, k, eval_func):
-        pass
+        from sklearn.feature_selection import SelectKBest
+        if k < 1:
+            raise ValueError('K value error in K_Best.')
 
+        # We can support more eval functions here
+        if eval_func.lower() not in ['classif']:
+            raise NotImplementedError('The eval function {} is not implemented'.format(eval_func))
 
-# if __name__ == '__main__':
-    # imp = Importance(algo='XGBoost')
+        if eval_func.lower() == 'classif':
+            from sklearn.feature_selection import f_classif
+            select_k_best = SelectKBest(f_classif, k)
+            train_features = np.array(self.train_data.drop(['poi'], axis=1))
+            train_labels = self.train_data.loc[:, 'poi'].values
+            select_k_best.fit(train_features, train_labels)
+            # print dict(zip(self.features[select_k_best.get_support(indices=True)]))
+            best_features = self.features[select_k_best.get_support(indices=True)]
+            best_scores = select_k_best.scores_[select_k_best.get_support(indices=True)]
+            top_k_features = dict(zip(best_features, best_scores))
+            return dict(sorted(top_k_features.iteritems(), key=operator.itemgetter(1), reverse=True))
+
+if __name__ == '__main__':
+    imp = Importance(algo='k_best')
+    print imp.K_Best(5, 'classif')
     # imp.get_importance_xgboost(file_path='feature_importance_xgboost.png', save=True)
     # imp.get_importance_rf(file_path='feature_importance_rf.png', save=True)
