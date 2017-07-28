@@ -14,13 +14,16 @@ from feature_loader import FeatureExtract
 
 class Aux:
 
-    def __init__(self, operation, **kwargs):
-        if operation not in ['create', 'scale']:
-            raise NotImplementedError('The mentioned feature operation {} is not implemented'.format(operation))
-        if operation.lower() == 'create':
-            self.new_feature = kwargs.get('new_feature')
+    feature_operation = None
 
-    def operate(self, argument, **kwargs):
+    def __init__(self, fOp):
+        if fOp not in ['create', 'scaling']:
+            raise NotImplementedError('The operation {} is not implemented'.format(fOp))
+        f = FeatureExtract()
+        Aux.feature_operation = fOp
+        self.data = f.train.append(f.test)
+
+    def operate(self, sign, new_feature, *features):
         """
         It takes a string as an argument
         and then performs the mathematical
@@ -29,16 +32,25 @@ class Aux:
         support some basic arguments. Complex
         arguments are may not work properly
 
-        For Example:
-            argument: f1 / f2 + f3
-            kwargs: f1 = 'bonus'
-                    f2 = 'salary'
-                    f3 = 'total_payments'
-
         The new features takes the name mentioned
         in ```self.new_feature```
 
-        :param argument: Operation arguments (str)
-        :param kwargs: feature names
-        :return: Pandas Series of new feature
+        :param sign: Operation signs (+, -, *, /)
+        :param new_feature: Name of the new feature
+        :param features: feature names
+        :return: Pandas DataFrame with the new feature
         """
+
+        if Aux.feature_operation != 'create':
+            raise RuntimeError('The Aux class object can not instantiate the '
+                               'method for the {} feature operation'.format(Aux.feature_operation))
+
+        self.data[new_feature] = self.data[features[0]]
+        for each in features[1::]:
+            self.data[new_feature] += self.data[each]
+        return self.data[['new_feature', 'bonus', 'salary']]
+
+
+if __name__ == '__main__':
+    aux = Aux(fOp='create')
+    print aux.operate('+', 'new_feature', 'bonus', 'salary')
