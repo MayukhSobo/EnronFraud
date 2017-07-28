@@ -4,7 +4,7 @@
     dictionary format to an (n x k) python list that's
     ready for training an sklearn algorithm
 
-    n--no. of key-value pairs in dictonary
+    n--no. of key-value pairs in dictionary
     k--no. of features being extracted
 
     dictionary keys are names of persons in dataset
