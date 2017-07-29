@@ -106,7 +106,7 @@ class Importance:
             plt.xlabel('relative importance')
             plt.gcf().savefig(file_path)
 
-    def get_importance_rf(self, file_path=None, save=True, cv=False, k=5):
+    def get_importance_rf(self, file_path=None, save=True, k=5):
         X_train = self.train_data.drop(['poi'], axis=1)
         X_train = np.array(X_train)
         y_train = self.train_data.loc[:, 'poi'].values
@@ -154,7 +154,7 @@ if __name__ == '__main__':
     # print '\n\tK_best algorithm'
     # print imp.K_Best(5, 'classif').keys()
     # print '\n\tXGBoost algorithm'
-    print imp.get_importance_xgboost(save=False, cv=True).keys()
-    print imp.get_importance_xgboost(save=False).keys()
+    # print imp.get_importance_xgboost(save=False, cv=True).keys()
+    # print imp.get_importance_xgboost(save=False).keys()
     # print '\n\tRandom Forest algorithm'
     # print imp.get_importance_rf(save=False).keys()
