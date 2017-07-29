@@ -48,7 +48,7 @@ class Aux:
         self.data[new_feature] = self.data[features[0]]
         for each in features[1::]:
             self.data[new_feature] += self.data[each]
-        return self.data[['new_feature', 'bonus', 'salary']]
+        return self.data
 
 
 if __name__ == '__main__':

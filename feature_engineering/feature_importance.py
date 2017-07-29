@@ -24,48 +24,87 @@ class Importance:
         using xgboost model if save=True. It also can
         perform parameter tuning if cv=True.
 
-        :param k:
+        :param k: Number of features
         :param file_path: image file to save
         :param save: True for saving as image
         :param cv: True for XGBoost's param tuning
         :return: None for save=True, list of features inf save=False
         """
 
+        if k < 1 or k > len(self.features):
+            raise ValueError('Error in k value of {}'.format(k))
+
         # Default XGB parameters
-        xgb_params = {
-                      "objective": "binary:logistic",
-                      "eta": 0.01,
-                      "max_depth": 8,
-                      'colsample_bytree': 0.8,
-                      'subsample': 0.8,
-                      "seed": 42,
-                      "silent": 1,
-                      'n_estimators': 100,
-                      'gamma': 0,
-                      'early_stopping_rounds': 900,
-                      'eval_metric': 'error@0.7'
-                      }
+
         num_boost_round = 100
         X_train = self.train_data.drop(['poi'], axis=1)
         y_train = self.train_data.loc[:, 'poi'].values
+        xgb_params = {
+            "objective": "binary:logistic",
+            "eta": 0.01,
+            "max_depth": 8,
+            'colsample_bytree': 0.8,
+            'subsample': 0.8,
+            "seed": 42,
+            "silent": 1,
+            'n_estimators': 100,
+            'gamma': 0,
+            'early_stopping_rounds': 900,
+            'eval_metric': 'error@0.7'
+        }
         if not cv:
             # don't perform parameter tuning
             dtrain = xgb.DMatrix(X_train, y_train, feature_names=self.features)
             gbdt = xgb.train(xgb_params, dtrain, num_boost_round)
             importance = sorted(gbdt.get_fscore().iteritems(), key=operator.itemgetter(1), reverse=True)
-            if not save:
-                return OrderedDict(importance[:k])
-            else:
-                import pandas as pd
-                from matplotlib import pylab as plt
-                df = pd.DataFrame(importance, columns=['feature', 'fscore'])
-                df['fscore'] = df['fscore'] / df['fscore'].sum()
-                plt.figure()
-                df.plot()
-                df.plot(kind='barh', x='feature', y='fscore', legend=False, figsize=(15, 10))
-                plt.title('XGBoost Feature Importance')
-                plt.xlabel('relative importance')
-                plt.gcf().savefig(file_path)
+        else:
+            from sklearn.model_selection import GridSearchCV
+            # If cross validation is applied
+            xgb_params = {
+                "objective": "binary:logistic",
+                "learning_rate": 0.01,
+                "max_depth": 8,
+                'colsample_bytree': 0.8,
+                'subsample': 0.8,
+                "seed": 42,
+                "silent": 1,
+                'n_estimators': 100,
+                'gamma': 0,
+                'early_stopping_rounds': 900,
+                'eval_metric': 'error@0.7'
+            }
+            parameters = {
+                'learning_rate': [0.01, 0.05, 0.1, 0.3, 0.5],
+                'max_depth': [3, 4, 5, 8, 10],
+                'subsample': [0.5, 0.8, 0.9, 1.0],
+                'colsample_bytree': list(np.arange(0.01, 0.1, 0.01))
+                # 'gamma': range(10, 16)
+            }
+            _clf = xgb.XGBClassifier(xgb_params, num_boost_round=100)
+            clf = GridSearchCV(_clf, parameters, n_jobs=4, cv=7, scoring='average_precision')
+            clf.fit(np.array(X_train), y_train)
+            best_learning_rate = clf.best_estimator_.learning_rate
+            best_max_depth = clf.best_estimator_.max_depth
+            best_subsample = clf.best_estimator_.subsample
+            xgb_params['learning_rate'] = best_learning_rate
+            xgb_params['max_depth'] = best_max_depth
+            xgb_params['subsample'] = best_subsample
+            dtrain = xgb.DMatrix(X_train, y_train, feature_names=self.features)
+            gbdt = xgb.train(xgb_params, dtrain, num_boost_round=100)
+            importance = sorted(gbdt.get_fscore().iteritems(), key=operator.itemgetter(1), reverse=True)
+        if not save:
+            return OrderedDict(importance[:k])
+        else:
+            import pandas as pd
+            from matplotlib import pylab as plt
+            df = pd.DataFrame(importance, columns=['feature', 'fscore'])
+            df['fscore'] = df['fscore'] / df['fscore'].sum()
+            plt.figure()
+            df.plot()
+            df.plot(kind='barh', x='feature', y='fscore', legend=False, figsize=(15, 10))
+            plt.title('XGBoost Feature Importance')
+            plt.xlabel('relative importance')
+            plt.gcf().savefig(file_path)
 
     def get_importance_rf(self, file_path=None, save=True, cv=False, k=5):
         X_train = self.train_data.drop(['poi'], axis=1)
@@ -111,10 +150,11 @@ class Importance:
 
 if __name__ == '__main__':
     imp = Importance(algo='*')
-    print '\t\t\t' + '-' * 5 + ' Top 5 features ' + '-' * 5
-    print '\n\tK_best algorithm'
-    print imp.K_Best(5, 'classif').keys()
-    print '\n\tXGBoost algorithm'
+    # print '\t\t\t' + '-' * 5 + ' Top 5 features ' + '-' * 5
+    # print '\n\tK_best algorithm'
+    # print imp.K_Best(5, 'classif').keys()
+    # print '\n\tXGBoost algorithm'
+    print imp.get_importance_xgboost(save=False, cv=True).keys()
     print imp.get_importance_xgboost(save=False).keys()
-    print '\n\tRandom Forest algorithm'
-    print imp.get_importance_rf(save=False).keys()
+    # print '\n\tRandom Forest algorithm'
+    # print imp.get_importance_rf(save=False).keys()
