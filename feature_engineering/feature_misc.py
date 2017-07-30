@@ -16,12 +16,14 @@ class Aux:
 
     feature_operation = None
 
-    def __init__(self, fOp):
+    def __init__(self, fOp, fObj):
         if fOp not in ['create', 'scaling']:
             raise NotImplementedError('The operation {} is not implemented'.format(fOp))
-        f = FeatureExtract()
+        # f = FeatureExtract()
         Aux.feature_operation = fOp
-        self.data = f.train.append(f.test)
+        self.feature_object = fObj
+        # print self.feature_object
+        self.data = self.feature_object.df
 
     def operate(self, sign, new_feature, *features):
         """
@@ -48,7 +50,8 @@ class Aux:
         self.data[new_feature] = self.data[features[0]]
         for each in features[1::]:
             self.data[new_feature] += self.data[each]
-        return self.data
+        FeatureExtract.featureCols.append(new_feature)
+        self.feature_object.df = self.data
 
 
 if __name__ == '__main__':
