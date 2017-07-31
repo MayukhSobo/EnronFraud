@@ -109,6 +109,8 @@ Model 2:
         algo: AdaBoostClassifier
 '''
 
+# Code would go here
+
 '''
 Model 3:
 
@@ -128,6 +130,8 @@ Model 3:
         algo: KNeighborsClassifier
 '''
 
+# Code would go here
+
 '''
 Model 4:
 
@@ -145,6 +149,8 @@ Model 4:
     Classification:
         algo: SVC
 '''
+
+# Code would go here
 
 '''
 Model 5:
@@ -171,3 +177,6 @@ Model 5:
     Classification:
         algo: Gradient Boosting
 '''
+
+# Code would go here
+
