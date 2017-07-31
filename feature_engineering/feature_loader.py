@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
 from sklearn.model_selection import train_test_split
 from feature_format import feature_format, target_feature_split
 
-DATA_PICKLE_SOURCE = '../data/final_project_dataset.pkl'
+DATA_PICKLE_SOURCE = 'data/final_project_dataset.pkl'
 
 
 class Features:

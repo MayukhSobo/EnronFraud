@@ -7,14 +7,14 @@ Fraud Detection by finding the Person of Interest (POI)
 
 **K_best algorithm**
 ```python
-['bonus', 'salary', 'exercised_stock_options', 'total_stock_value', 'shared_receipt_with_poi']
+['poi_interaction', 'total_stock_value', 'shared_receipt_with_poi', 'income_ratio', 'exercised_stock_options']
 ```
 **XGBoost algorithm**
 ```python
-['salary', 'to_messages', 'deferral_payments', 'total_payments', 'bonus']
+['poi_interaction', 'expenses', 'shared_receipt_with_poi', 'restricted_stock', 'exercised_stock_options']
 ```
 
 **Random Forest algorithm**
 ```python
-['to_messages', 'deferral_payments', 'bonus', 'total_stock_value', 'expenses']
+['deferred_income', 'expenses', 'poi_interaction', 'shared_receipt_with_poi', 'income_ratio']
 ```

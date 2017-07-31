@@ -155,21 +155,20 @@ class Importance:
             train_features = np.array(self.train_data.drop(['poi'], axis=1))
             train_labels = self.train_data.loc[:, 'poi'].values
             select_k_best.fit(train_features, train_labels)
-            best_features = self.features[select_k_best.get_support(indices=True)]
-            best_scores = select_k_best.scores_[select_k_best.get_support(indices=True)]
+            # print select_k_best.get_support(indices=True)
+            # print self.features[select_k_best.get_support(indices=True)]
+            best_features = [self.features[each] for each in select_k_best.get_support(indices=True)]
+            best_scores = [select_k_best.scores_[each] for each in select_k_best.get_support(indices=True)]
             top_k_features = dict(zip(best_features, best_scores))
             return OrderedDict(sorted(top_k_features.iteritems(), key=operator.itemgetter(1), reverse=True))
 
-    def get_importance_PCA(self):
-        pass
-
-if __name__ == '__main__':
-    imp = Importance(algo='*')
-    print '\t\t\t' + '-' * 5 + ' Top 5 features ' + '-' * 5
-    print '\n\tK_best algorithm'
-    print imp.get_importance_kBest(5, 'classif').keys()
-    print '\n\tXGBoost algorithm'
-    # # print imp.get_importance_xgboost(save=False, cv=True).keys()
-    print imp.get_importance_xgboost(save=False).keys()
-    print '\n\tRandom Forest algorithm'
-    print imp.get_importance_rf(save=False).keys()
+# if __name__ == '__main__':
+#     imp = Importance(algo='*')
+#     print '\t\t\t' + '-' * 5 + ' Top 5 features ' + '-' * 5
+#     print '\n\tK_best algorithm'
+#     print imp.get_importance_kBest(5, 'classif').keys()
+#     print '\n\tXGBoost algorithm'
+#     # # print imp.get_importance_xgboost(save=False, cv=True).keys()
+#     print imp.get_importance_xgboost(save=False).keys()
+#     print '\n\tRandom Forest algorithm'
+#     print imp.get_importance_rf(save=False).keys()
