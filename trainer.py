@@ -54,5 +54,5 @@ f.feature_splits()
 imp = feature_importance.Importance(algo='*', fObj=f)
 print imp.get_importance_rf(save=False).keys()
 print imp.get_importance_xgboost(save=False).keys()
-print imp.K_Best(k=5, eval_func='classif')
+print imp.get_importance_kBest(k=5, eval_func='classif')
 

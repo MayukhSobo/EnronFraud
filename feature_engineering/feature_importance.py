@@ -1,6 +1,4 @@
-import xgboost as xgb
 import numpy as np
-from sklearn.ensemble import ExtraTreesClassifier
 from feature_loader import FeatureExtract
 import operator
 from collections import OrderedDict
@@ -11,7 +9,8 @@ class Importance:
     def __init__(self, algo, fObj):
         if algo.lower() not in ['xgboost', 'random_forest', 'k_best', '*']:
             raise NotImplementedError("Algorithm support not implemented")
-        # // TODO implementation for save = False
+        else:
+            self.algo = algo.lower()
         self.features_obj = fObj
         self.test_data = self.features_obj.test
         self.train_data = self.features_obj.train
@@ -30,6 +29,9 @@ class Importance:
         :param cv: True for XGBoost's param tuning
         :return: None for save=True, list of features inf save=False
         """
+        import xgboost as xgb
+        if self.algo not in ['*', 'xgboost']:
+            raise ValueError('class obj is not created with the {} algorithm support'.format(self.algo))
 
         if k < 1 or k > len(self.features):
             raise ValueError('Error in k value of {}'.format(k))
@@ -107,6 +109,13 @@ class Importance:
             plt.gcf().savefig(file_path)
 
     def get_importance_rf(self, file_path=None, save=True, k=5):
+        from sklearn.ensemble import ExtraTreesClassifier
+        if self.algo not in ['*', 'random_forest']:
+            raise ValueError('class obj is not created with the {} algorithm support'.format(self.algo))
+
+        if k < 1 or k > len(self.features):
+            raise ValueError('Error in k value of {}'.format(k))
+
         X_train = self.train_data.drop(['poi'], axis=1)
         X_train = np.array(X_train)
         y_train = self.train_data.loc[:, 'poi'].values
@@ -128,9 +137,12 @@ class Importance:
             plt.xlabel('relative importance')
             plt.gcf().savefig(file_path)
 
-    def K_Best(self, k, eval_func):
+    def get_importance_kBest(self, k, eval_func):
         from sklearn.feature_selection import SelectKBest
-        if k < 1:
+        if self.algo not in ['*', 'k_best']:
+            raise ValueError('class obj is not created with the {} algorithm support'.format(self.algo))
+
+        if k < 1 or k > len(self.features):
             raise ValueError('K value error in K_Best.')
 
         # We can support more eval functions here
@@ -148,11 +160,14 @@ class Importance:
             top_k_features = dict(zip(best_features, best_scores))
             return OrderedDict(sorted(top_k_features.iteritems(), key=operator.itemgetter(1), reverse=True))
 
+    def get_importance_PCA(self):
+        pass
+
 if __name__ == '__main__':
     imp = Importance(algo='*')
     print '\t\t\t' + '-' * 5 + ' Top 5 features ' + '-' * 5
     print '\n\tK_best algorithm'
-    print imp.K_Best(5, 'classif').keys()
+    print imp.get_importance_kBest(5, 'classif').keys()
     print '\n\tXGBoost algorithm'
     # # print imp.get_importance_xgboost(save=False, cv=True).keys()
     print imp.get_importance_xgboost(save=False).keys()
