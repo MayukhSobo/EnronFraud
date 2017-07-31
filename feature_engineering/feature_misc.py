@@ -49,8 +49,21 @@ class Aux:
 
         self.data[new_feature] = self.data[features[0]]
         for each in features[1::]:
-            self.data[new_feature] += self.data[each]
+            if sign == '+':
+                self.data[new_feature] += self.data[each]
+            elif sign == '-':
+                self.data[new_feature] -= self.data[each]
+            elif sign == '*':
+                self.data[new_feature] *= self.data[each]
+            elif sign == '/':
+                self.data[new_feature] /= self.data[each]
+
+        # Adding the new feature
         FeatureExtract.featureCols.append(new_feature)
+        # Removing the old features
+        for each in features:
+            FeatureExtract.featureCols.remove(each)
+        self.data.fillna(0.0, inplace=True)
         self.feature_object.df = self.data
 
 

@@ -55,7 +55,6 @@ class FeatureExtract(Features):
     def __init__(self, testSize=0.3, randomState=42, target='poi', featureList="*"):
         super(self.__class__, self).__init__(target)
         FeatureExtract.prepare_features()
-
         self.rs = randomState
         self.ts = testSize
         self.df_test = None

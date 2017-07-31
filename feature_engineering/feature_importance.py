@@ -8,15 +8,15 @@ from collections import OrderedDict
 
 class Importance:
 
-    def __init__(self, algo):
+    def __init__(self, algo, fObj):
         if algo.lower() not in ['xgboost', 'random_forest', 'k_best', '*']:
             raise NotImplementedError("Algorithm support not implemented")
         # // TODO implementation for save = False
-        _data = FeatureExtract()
-        self.test_data = _data.test
-        self.train_data = _data.train
-        self.data = self.train_data.append(self.test_data)
-        self.features = self.train_data.drop(['poi'], axis=1).columns.values
+        self.features_obj = fObj
+        self.test_data = self.features_obj.test
+        self.train_data = self.features_obj.train
+        self.data = self.features_obj.df
+        self.features = FeatureExtract.featureCols
 
     def get_importance_xgboost(self, file_path=None, save=True, cv=False, k=5):
         """
@@ -150,11 +150,11 @@ class Importance:
 
 if __name__ == '__main__':
     imp = Importance(algo='*')
-    # print '\t\t\t' + '-' * 5 + ' Top 5 features ' + '-' * 5
-    # print '\n\tK_best algorithm'
-    # print imp.K_Best(5, 'classif').keys()
-    # print '\n\tXGBoost algorithm'
-    # print imp.get_importance_xgboost(save=False, cv=True).keys()
-    # print imp.get_importance_xgboost(save=False).keys()
-    # print '\n\tRandom Forest algorithm'
-    # print imp.get_importance_rf(save=False).keys()
+    print '\t\t\t' + '-' * 5 + ' Top 5 features ' + '-' * 5
+    print '\n\tK_best algorithm'
+    print imp.K_Best(5, 'classif').keys()
+    print '\n\tXGBoost algorithm'
+    # # print imp.get_importance_xgboost(save=False, cv=True).keys()
+    print imp.get_importance_xgboost(save=False).keys()
+    print '\n\tRandom Forest algorithm'
+    print imp.get_importance_rf(save=False).keys()
