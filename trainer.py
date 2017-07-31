@@ -61,9 +61,10 @@ imp = feature_importance.Importance(algo='*', fObj=f)
 # print imp.get_importance_kBest(k=5, eval_func='classif').keys()
 
 # ~~~~~~~~~~~~~~~~~~ Classification ~~~~~~~~~~~~~~~~~~ #
+
+# Model 1
+
 '''
-Model 1:
-    
     Feature Selection:
         algorithm: Random Forest
         n_estimator: 250
@@ -83,9 +84,9 @@ Model 1:
 
 # Code would go here
 
-'''
-Model 2:
+# Model 2
 
+'''
     Feature Selection:
         algorithm: XGBoost
         early_stopping_rounds: 900
@@ -111,9 +112,9 @@ Model 2:
 
 # Code would go here
 
-'''
-Model 3:
+# Model 3
 
+'''
     Feature Selection:
         algo: PCA
         type: auto
@@ -132,9 +133,9 @@ Model 3:
 
 # Code would go here
 
-'''
-Model 4:
+# Model 4
 
+'''
     Feature Selection:
         algo: K Best
         k: 5
@@ -152,9 +153,9 @@ Model 4:
 
 # Code would go here
 
-'''
-Model 5:
+# Model 5
 
+'''
     Feature Selection:
         algorithm: XGBoost
         early_stopping_rounds: 900
