@@ -56,6 +56,118 @@ f.feature_splits()
 # -------------- Feature Selection ---------------- #
 #
 imp = feature_importance.Importance(algo='*', fObj=f)
-print imp.get_importance_rf(save=False).keys()
-print imp.get_importance_xgboost(save=False).keys()
-print imp.get_importance_kBest(k=5, eval_func='classif').keys()
+# print imp.get_importance_rf(save=False).keys()
+# print imp.get_importance_xgboost(save=False).keys()
+# print imp.get_importance_kBest(k=5, eval_func='classif').keys()
+
+# ~~~~~~~~~~~~~~~~~~ Classification ~~~~~~~~~~~~~~~~~~ #
+'''
+Model 1:
+    
+    Feature Selection:
+        algorithm: Random Forest
+        n_estimator: 250
+        random_state: 42
+        number of features: 5
+        cross validation: False
+
+    Feature Scaling:
+        None
+
+    Cross Validation:
+        None
+
+    Classification:
+        algo: Gaussian Naive Bayes
+'''
+
+# Code would go here
+
+'''
+Model 2:
+
+    Feature Selection:
+        algorithm: XGBoost
+        early_stopping_rounds: 900
+        num_boosting_rounds: 100
+        eval_metric: error@0.7
+        objective: binary:logistic
+        random_state: 42
+        learning_rate: 0.01
+        max_depth: 8
+        subsample: 0.8
+        colsample_bytree: 0.8
+        cross validation: False
+           
+    Feature Scaling:
+        None
+    
+    Cross Validation:
+        None
+    
+    Classification:
+        algo: AdaBoostClassifier
+'''
+
+'''
+Model 3:
+
+    Feature Selection:
+        algo: PCA
+        type: auto
+        n_components: 3
+        whiten: True
+
+    Feature Scaling:
+        MaxAbsScaler
+
+    Cross Validation:
+        StratifiedShuffleSplit
+
+    Classification:
+        algo: KNeighborsClassifier
+'''
+
+'''
+Model 4:
+
+    Feature Selection:
+        algo: K Best
+        k: 5
+        eval_func: f_classif
+
+    Feature Scaling:
+        MinMaxScaler
+
+    Cross Validation:
+        None
+
+    Classification:
+        algo: SVC
+'''
+
+'''
+Model 5:
+
+    Feature Selection:
+        algorithm: XGBoost
+        early_stopping_rounds: 900
+        num_boosting_rounds: 100
+        eval_metric: error@0.7
+        objective: binary:logistic
+        random_state: 42
+        learning_rate: best from CV
+        max_depth: best from CV
+        subsample: best from CV
+        colsample_bytree: best from CV
+        cross validation: True
+
+    Feature Scaling:
+        MinMaxScaler
+
+    Cross Validation:
+        StratifiedShuffleSplit
+
+    Classification:
+        algo: Gradient Boosting
+'''
