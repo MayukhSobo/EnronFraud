@@ -51,6 +51,8 @@ f.feature_splits()
 # -------------- Feature Selection ---------------- #
 # print f.df[['expenses', 'poi', 'other', 'deferred_income']].to_csv('data.csv')
 
-imp = feature_importance.Importance(algo='random_forest', fObj=f)
+imp = feature_importance.Importance(algo='*', fObj=f)
 print imp.get_importance_rf(save=False).keys()
+print imp.get_importance_xgboost(save=False).keys()
+print imp.K_Best(k=5, eval_func='classif')
 
