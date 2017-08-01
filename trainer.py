@@ -2,7 +2,11 @@ from feature_engineering import feature_loader
 from feature_engineering import feature_misc
 from feature_engineering import feature_importance
 from tester import test_classifier
-from sklearn.pipeline import Pipeline
+from sklearn.neighbors import NearestCentroid
+from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
 import timeit
 
 
@@ -84,13 +88,11 @@ imp = feature_importance.Importance(algo='*', fObj=f)
     Classification:
         algo: Gaussian Naive Bayes
 '''
-from sklearn.naive_bayes import GaussianNB
-important_features = imp.get_importance_rf(save=False).keys()
-dataset = f.adhoc_feature_parse(columns=important_features, merge_train_test=True)
-
+important_features_rf = imp.get_importance_rf(save=False).keys()
+dataset_rf = f.adhoc_feature_parse(columns=important_features_rf, merge_train_test=True)
 clf = GaussianNB()
 start = timeit.timeit()
-test_classifier(clf, dataset)
+test_classifier(clf, dataset_rf)
 print "Elapsed: " + str(timeit.timeit() - start)
 
 # Model 2
@@ -108,7 +110,7 @@ print "Elapsed: " + str(timeit.timeit() - start)
         subsample: 0.8
         colsample_bytree: 0.8
         cross validation: False
-           
+
     Feature Scaling:
         None
     
@@ -119,35 +121,45 @@ print "Elapsed: " + str(timeit.timeit() - start)
         algo: AdaBoostClassifier
 '''
 
-from sklearn.ensemble import AdaBoostClassifier
-from sklearn.tree import DecisionTreeClassifier
-important_features = imp.get_importance_xgboost(save=False).keys()
-dataset = f.adhoc_feature_parse(columns=important_features, merge_train_test=True)
-
+important_features_xgb = imp.get_importance_xgboost(save=False).keys()
+dataset_xgb = f.adhoc_feature_parse(columns=important_features_xgb, merge_train_test=True)
 clf = AdaBoostClassifier(DecisionTreeClassifier(min_samples_split=10), random_state=42)
 start = timeit.timeit()
-test_classifier(clf, dataset)
+test_classifier(clf, dataset_xgb)
 print "Elapsed: " + str(timeit.timeit() - start)
+
 # Model 3
 
 '''
     Feature Selection:
-        algo: PCA
-        type: auto
-        n_components: 3
-        whiten: True
+        algorithm: XGBoost
+        early_stopping_rounds: 900
+        num_boosting_rounds: 100
+        eval_metric: error@0.7
+        objective: binary:logistic
+        random_state: 42
+        learning_rate: best from CV
+        max_depth: best from CV
+        subsample: best from CV
+        colsample_bytree: best from CV
+        cross validation: True
 
     Feature Scaling:
-        MaxAbsScaler
+        None
 
     Cross Validation:
-        StratifiedShuffleSplit
+        None
 
     Classification:
-        algo: KNeighborsClassifier
+        algo: NearestCentroid
 '''
 
-# Code would go here
+important_features_xgb_cv = imp.get_importance_xgboost(save=False, cv=True).keys()
+dataset_xgb_cv = f.adhoc_feature_parse(columns=important_features_xgb_cv, merge_train_test=True)
+clf = NearestCentroid(shrink_threshold=0.1)
+start = timeit.timeit()
+test_classifier(clf, dataset_xgb_cv)
+print "Elapsed: " + str(timeit.timeit() - start)
 
 # Model 4
 
@@ -158,7 +170,7 @@ print "Elapsed: " + str(timeit.timeit() - start)
         eval_func: f_classif
 
     Feature Scaling:
-        MinMaxScaler
+        None
 
     Cross Validation:
         None
@@ -167,8 +179,12 @@ print "Elapsed: " + str(timeit.timeit() - start)
         algo: SVC
 '''
 
-# Code would go here
-
+important_features_kbest = imp.get_importance_kBest(k=5, eval_func='classif').keys()
+dataset_kbest = f.adhoc_feature_parse(columns=important_features_kbest, merge_train_test=True)
+clf = SVC(C=1000, kernel='rbf', gamma=1)
+start = timeit.timeit()
+test_classifier(clf, dataset_kbest)
+print "Elapsed: " + str(timeit.timeit() - start)
 # Model 5
 
 '''
@@ -186,13 +202,15 @@ print "Elapsed: " + str(timeit.timeit() - start)
         cross validation: True
 
     Feature Scaling:
-        MinMaxScaler
+        None
 
     Cross Validation:
-        StratifiedShuffleSplit
+        None
 
     Classification:
         algo: Gradient Boosting
 '''
-
-# Code would go here
+start = timeit.timeit()
+clf = GradientBoostingClassifier()
+test_classifier(clf, dataset_xgb_cv)
+print "Elapsed: " + str(timeit.timeit() - start)
