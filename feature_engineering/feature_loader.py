@@ -106,13 +106,17 @@ class FeatureExtract(Features):
             if columns == ['*']:
                 return self.df.as_matrix()
             else:
-                columns.append('poi')
-                return self.df[columns].as_matrix()
+                from copy import deepcopy
+                features = deepcopy(columns)
+                features.append('poi')
+                return self.df[features].as_matrix()
         else:
             if columns == ['*']:
                 return self.train.as_matrix(), self.test.as_matrix()
             else:
-                columns.append('poi')
+                from copy import deepcopy
+                features = deepcopy(columns)
+                features.append('poi')
                 return self.train[columns].as_matrix(), self.test[columns].as_matrix()
 
 # 	f = FeatureExtract()

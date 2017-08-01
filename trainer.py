@@ -1,7 +1,9 @@
 from feature_engineering import feature_loader
 from feature_engineering import feature_misc
 from feature_engineering import feature_importance
+from tester import test_classifier
 from sklearn.pipeline import Pipeline
+import timeit
 
 
 # ------------ Creating a Feature Object ------------ #
@@ -82,15 +84,14 @@ imp = feature_importance.Importance(algo='*', fObj=f)
     Classification:
         algo: Gaussian Naive Bayes
 '''
-# from sklearn.naive_bayes import GaussianNB
-#
-features = imp.get_importance_rf(save=False).keys()
-X_train, X_test = f.adhoc_feature_parse(columns=features)
+from sklearn.naive_bayes import GaussianNB
+important_features = imp.get_importance_rf(save=False).keys()
+dataset = f.adhoc_feature_parse(columns=important_features, merge_train_test=True)
 
-
-
-
-
+clf = GaussianNB()
+start = timeit.timeit()
+test_classifier(clf, dataset)
+print "Elapsed: " + str(timeit.timeit() - start)
 
 # Model 2
 
@@ -118,8 +119,15 @@ X_train, X_test = f.adhoc_feature_parse(columns=features)
         algo: AdaBoostClassifier
 '''
 
-# Code would go here
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+important_features = imp.get_importance_xgboost(save=False).keys()
+dataset = f.adhoc_feature_parse(columns=important_features, merge_train_test=True)
 
+clf = AdaBoostClassifier(DecisionTreeClassifier(min_samples_split=10), random_state=42)
+start = timeit.timeit()
+test_classifier(clf, dataset)
+print "Elapsed: " + str(timeit.timeit() - start)
 # Model 3
 
 '''
@@ -188,4 +196,3 @@ X_train, X_test = f.adhoc_feature_parse(columns=features)
 '''
 
 # Code would go here
-
