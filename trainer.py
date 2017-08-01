@@ -1,6 +1,7 @@
 from feature_engineering import feature_loader
 from feature_engineering import feature_misc
 from feature_engineering import feature_importance
+from sklearn.pipeline import Pipeline
 
 
 # ------------ Creating a Feature Object ------------ #
@@ -81,8 +82,15 @@ imp = feature_importance.Importance(algo='*', fObj=f)
     Classification:
         algo: Gaussian Naive Bayes
 '''
+# from sklearn.naive_bayes import GaussianNB
+#
+features = imp.get_importance_rf(save=False).keys()
+X_train, X_test = f.adhoc_feature_parse(columns=features)
 
-# Code would go here
+
+
+
+
 
 # Model 2
 

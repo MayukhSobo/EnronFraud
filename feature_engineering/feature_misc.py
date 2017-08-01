@@ -64,6 +64,10 @@ class Aux:
         for each in features:
             FeatureExtract.featureCols.remove(each)
         self.data.fillna(0.0, inplace=True)
+        # This is done to keep target at the end
+        target = self.data[FeatureExtract.targetCol]
+        self.data.drop([FeatureExtract.targetCol], axis=1, inplace=True)
+        self.data[FeatureExtract.targetCol] = target
         self.feature_object.df = self.data
 
 

@@ -93,6 +93,27 @@ class FeatureExtract(Features):
     def test(self):
         return self.df_test
 
-# if __name__ == '__main__':
+    def adhoc_feature_parse(self, columns='*', merge_train_test=False):
+        """
+
+        :param columns: List - Columns that is to be parsed
+        :param merge_train_test: Bool - Merger the test and train
+        :return: Numpy array
+        """
+        if not isinstance(columns, list):
+            columns = list(columns)
+        if merge_train_test:
+            if columns == ['*']:
+                return self.df.as_matrix()
+            else:
+                columns.append('poi')
+                return self.df[columns].as_matrix()
+        else:
+            if columns == ['*']:
+                return self.train.as_matrix(), self.test.as_matrix()
+            else:
+                columns.append('poi')
+                return self.train[columns].as_matrix(), self.test[columns].as_matrix()
+
 # 	f = FeatureExtract()
 # 	# print f.train.head(n=1)
