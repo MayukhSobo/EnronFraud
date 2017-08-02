@@ -25,7 +25,7 @@ class Aux:
         # print self.feature_object
         self.data = self.feature_object.df
 
-    def operate(self, sign, new_feature, *features):
+    def operate(self, sign, new_feature, features, remove=True):
         """
         It takes a string as an argument
         and then performs the mathematical
@@ -40,6 +40,7 @@ class Aux:
         :param sign: Operation signs (+, -, *, /)
         :param new_feature: Name of the new feature
         :param features: feature names
+        :param remove: remove the old features
         :return: Pandas DataFrame with the new feature
         """
 
@@ -61,8 +62,9 @@ class Aux:
         # Adding the new feature
         FeatureExtract.featureCols.append(new_feature)
         # Removing the old features
-        for each in features:
-            FeatureExtract.featureCols.remove(each)
+        if remove:
+            for each in features:
+                FeatureExtract.featureCols.remove(each)
         self.data.fillna(0.0, inplace=True)
         # This is done to keep target at the end
         target = self.data[FeatureExtract.targetCol]

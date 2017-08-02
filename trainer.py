@@ -2,11 +2,11 @@ from feature_engineering import feature_loader
 from feature_engineering import feature_misc
 from feature_engineering import feature_importance
 from tester import test_classifier
-from sklearn.neighbors import NearestCentroid
+from sklearn.neighbors import NearestCentroid, KNeighborsClassifier
 from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC, SVC
 import timeit
 
 
@@ -29,9 +29,9 @@ Description         : As both ```from_this_person_to_poi``` and ```from_poi_to_t
                       the from_this_person_to_poi & from_poi_to_this_person
                       by total number of from and to messages. This makes it even more robust.
 '''
-aux.operate('/', 'from_this_person_to_poi_stand', 'from_this_person_to_poi', 'from_messages')
-aux.operate('/', 'from_poi_to_this_person_stand', 'from_poi_to_this_person', 'to_messages')
-aux.operate('+', 'poi_interaction', 'from_poi_to_this_person_stand', 'from_this_person_to_poi_stand')
+aux.operate('/', 'from_this_person_to_poi_stand', features=['from_this_person_to_poi', 'from_messages'])
+aux.operate('/', 'from_poi_to_this_person_stand', features=['from_poi_to_this_person', 'to_messages'])
+aux.operate('+', 'poi_interaction', features=['from_poi_to_this_person_stand', 'from_this_person_to_poi_stand'])
 
 '''
 Feature Name        : income_ratio
@@ -42,9 +42,16 @@ Description         : This is very powerful feature because it standardise the i
                       POI then, this ratio wouldn't be too large but if a person is POI, this value
                       would probably be quite large.
 '''
-aux.operate('+', 'bonusPlusSalaryPlusIncentives', 'bonus', 'salary', 'long_term_incentive')
-aux.operate('/', 'income_ratio', 'bonusPlusSalaryPlusIncentives', 'total_payments')
+aux.operate('+', 'bonusPlusSalaryPlusIncentives', features=['bonus', 'salary', 'long_term_incentive'])
+aux.operate(sign='/', new_feature='income_ratio',  remove=False, features=['bonusPlusSalaryPlusIncentives',
+                                                                           'total_payments'])
 
+aux.operate('/', 'expenses_std', features=['expenses', 'total_payments'], remove=False)
+aux.operate('/', 'deferral_payments_std', features=['deferral_payments', 'total_payments'], remove=False)
+aux.operate('/', 'other_std', features=['other', 'total_payments'])
+feature_loader.FeatureExtract.featureCols.remove('expenses')
+feature_loader.FeatureExtract.featureCols.remove('bonusPlusSalaryPlusIncentives')
+feature_loader.FeatureExtract.featureCols.remove('deferral_payments')
 # ------------ Remove the features that are not required -------------- #
 # This feature is kept manual because it is not mandatory
 f.df.drop(['from_this_person_to_poi',
@@ -56,16 +63,20 @@ f.df.drop(['from_this_person_to_poi',
            'salary',
            'long_term_incentive',
            'from_this_person_to_poi_stand',
-           'from_poi_to_this_person_stand'],
+           'from_poi_to_this_person_stand',
+           'expenses',
+           'other',
+           'total_payments',
+           'deferral_payments'],
           axis=1, inplace=True)
 #  ------------ Split the dataset for train and test --------- #
 f.feature_splits()
 # -------------- Feature Selection ---------------- #
 #
 imp = feature_importance.Importance(algo='*', fObj=f)
-# print imp.get_importance_rf(save=False).keys()
-# print imp.get_importance_xgboost(save=False).keys()
-# print imp.get_importance_kBest(k=5, eval_func='classif').keys()
+print imp.get_importance_rf(save=False).keys()
+print imp.get_importance_xgboost(save=False).keys()
+print imp.get_importance_kBest(k=5, eval_func='classif').keys()
 
 # ~~~~~~~~~~~~~~~~~~ Classification ~~~~~~~~~~~~~~~~~~ #
 
@@ -214,3 +225,46 @@ start = timeit.timeit()
 clf = GradientBoostingClassifier()
 test_classifier(clf, dataset_xgb_cv)
 print "Elapsed: " + str(timeit.timeit() - start)
+
+
+# ------------- Fine tune Classifiers ------------- #
+# from sklearn.pipeline import Pipeline
+# from sklearn.preprocessing import MaxAbsScaler, StandardScaler
+# from sklearn.decomposition import PCA
+# from sklearn.feature_selection import SelectKBest
+# from sklearn.model_selection import StratifiedShuffleSplit
+# from sklearn.model_selection import GridSearchCV
+# from sklearn.ensemble import RandomForestClassifier
+#
+# pipe = Pipeline([('scale', MaxAbsScaler()),
+#                  ('reduce_dim', PCA(random_state=42)),
+#                  ('classify', SVC(class_weight={0.: 1, 1.: 3.3}))])
+#
+# N_FEATURES_OPTIONS = range(2, f.df.shape[1] - 1)
+#
+# C_VALUES = [0.1, 1, 10]
+# gamma_param = range(10, 30)
+# param_grid = [
+#     {
+#         'scale': [None, MaxAbsScaler()],
+#         'reduce_dim': [PCA(random_state=42)],
+#         'reduce_dim__n_components': N_FEATURES_OPTIONS,
+#         'classify__C': C_VALUES,
+#         'classify__gamma': gamma_param
+#     },
+#     {
+#         'scale': [None, MaxAbsScaler()],
+#         'reduce_dim': [SelectKBest()],
+#         'reduce_dim__k': N_FEATURES_OPTIONS,
+#         'classify__C': C_VALUES,
+#         'classify__gamma': gamma_param
+#     },
+# ]
+#
+# cv = StratifiedShuffleSplit(random_state=42)
+# grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='f1', n_jobs=-1)
+# features = f.df.as_matrix()[:, 0:-2]
+# labels = f.df.as_matrix()[:, -1]
+# grid.fit(features, labels)
+# test_classifier(grid.best_estimator_, f.df.as_matrix())
+# print f.df.columns
