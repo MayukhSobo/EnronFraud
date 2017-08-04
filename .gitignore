@@ -1,4 +1,7 @@
-# Created by .ignore support plugin (hsz.mobi)
 tools/
 *.pyc
 .idea/
+
+.DS_Store
+feature_engineering/__pycache__/
+venv/
