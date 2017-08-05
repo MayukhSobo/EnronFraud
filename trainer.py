@@ -78,9 +78,11 @@ f.feature_splits()
 # -------------- Feature Selection ---------------- #
 #
 imp = feature_importance.Importance(algo='*', fObj=f)
-print imp.get_importance_rf(save=True, file_path='importance_random_forest.png')
-print imp.get_importance_xgboost(save=True, file_path='importance_xgboost.png')
-print imp.get_importance_kBest(k=5, eval_func='classif').keys()
+# print imp.get_importance_rf(save=True, file_path='importance_random_forest.png')
+# print imp.get_importance_xgboost(save=True, file_path='importance_xgboost.png')
+# print imp.get_importance_kBest(k=5, eval_func='classif').keys()
+
+f.df.to_pickle('final_df.pkl')
 
 # # ~~~~~~~~~~~~~~~~~~ Classification ~~~~~~~~~~~~~~~~~~ #
 #

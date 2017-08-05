@@ -5,3 +5,4 @@ tools/
 .DS_Store
 feature_engineering/__pycache__/
 venv/
+.ipynb_checkpoints/
