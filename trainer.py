@@ -239,26 +239,26 @@ f.df.to_pickle('final_df.pkl')
 # ------------- Fine tune Classifiers ------------- #
 
 # >>>>>>>>>  SVC with penalty for balanced score <<<<<<<< #
-# '''
-# Fine tuned Classifier 1: SVC - with penalty of 1/3.3
-#                           for biased class. SVC expects
-#                           the class should be balanced but
-#                           in reality the class is not. Hence
-#                           we put the penalty term. So now one
-#                           class instance of 1 is equal to 3.3
-#                           instances of class 0
-#
-# Classifier Result:        Balanced result for balanced precision
-#                           and accuracy. The dataset is not so good
-#                           and best balanced score can not be more
-#                           than 0.4.
-#
-# Classifier Scores:        Accuracy: 0.83920
-#                           Precision: 0.38669
-#                           Recall: 0.35150
-#                           F1: 0.36826
-#                           F2: 0.35802
-# '''
+'''
+Fine tuned Classifier 1: SVC - with penalty of 1/3.3
+                          for biased class. SVC expects
+                          the class should be balanced but
+                          in reality the class is not. Hence
+                          we put the penalty term. So now one
+                          class instance of 1 is equal to 3.3
+                          instances of class 0
+
+Classifier Result:        Balanced result for balanced precision
+                          and accuracy. The dataset is not so good
+                          and best balanced score can not be more
+                          than 0.4.
+
+Classifier Scores:        Accuracy: 0.83920
+                          Precision: 0.38669
+                          Recall: 0.35150
+                          F1: 0.36826
+                          F2: 0.35802
+'''
 # pipe = Pipeline([('scale', MaxAbsScaler()),
 #                  ('reduce_dim', PCA(random_state=42)),
 #                  ('classify', SVC(class_weight={0.: 1, 1.: 3.3}))])
@@ -292,25 +292,25 @@ f.df.to_pickle('final_df.pkl')
 # test_classifier(grid.best_estimator_, f.df.as_matrix())
 #
 # # >>>>>>>>>>>>>> A better balanced score with Naive Bayes with PCA <<<<<<<<< #
-# '''
-# Fine tuned Classifier 2: GaussianNB - This assumes that the
-#                          features are independent of each other
-#                          and hence PCA is used to make the dependent
-#                          components as independent.
-#
-# Classifier Result:       Because of the PCA, the Naive Bayes performs
-#                          better than the previous one. We see jump in
-#                          both Precision and Accuracy than SVC with penalty
-#                          and hence can comment that Naive Bayes is performing
-#                          better than the SVC and it's performance is not
-#                          affected by biased class distribution.
-#
-# Classifier Scores:        Accuracy: 0.87580
-#                           Precision: 0.55170
-#                           Recall: 0.36550
-#                           F1: 0.43970
-#                           F2: 0.39196
-# '''
+'''
+Fine tuned Classifier 2: GaussianNB - This assumes that the
+                         features are independent of each other
+                         and hence PCA is used to make the dependent
+                         components as independent.
+
+Classifier Result:       Because of the PCA, the Naive Bayes performs
+                         better than the previous one. We see jump in
+                         both Precision and Accuracy than SVC with penalty
+                         and hence can comment that Naive Bayes is performing
+                         better than the SVC and it's performance is not
+                         affected by biased class distribution.
+
+Classifier Scores:        Accuracy: 0.87580
+                          Precision: 0.55170
+                          Recall: 0.36550
+                          F1: 0.43970
+                          F2: 0.39196
+'''
 # pipe = Pipeline([('scale', MaxAbsScaler()),
 #                  ('reduce_dim', PCA(random_state=42)),
 #                  ('classify', GaussianNB())])
@@ -328,7 +328,54 @@ f.df.to_pickle('final_df.pkl')
 # grid.fit(features, labels)
 # test_classifier(grid.best_estimator_, f.df.as_matrix())
 
+'''
+Fine tuned Classifier 3: DecisionTreeClassifier - Decision Tree
+                         said to perform better for biased dataset
+                         if proper cross validation is done
+
+Classifier Result:       Decision Tree performs best if we tune
+                         the max_depth parameter using cross validation
+                         parameter. The presort parameter is is used because
+                         sorted dataset training time is comparatively lesser
+
+Classifier Scores:        Accuracy: 0.85140
+                          Precision: 0.44831
+                          Recall: 0.49650
+                          F1: 0.47117
+                          F2: 0.48605
+'''
+# pipe = Pipeline([('scale', MaxAbsScaler()),
+#                  ('reduce_dim', PCA(random_state=42)),
+#                  ('classify', DecisionTreeClassifier(class_weight={0.: 1, 1.: 4}, random_state=42))])
+#
+# number_of_features = range(2, f.df.shape[1] - 1)
+# learning_rate = [0.01, 0.05, 0.3]
+# max_depth = range(10, 2, -1)
+# presort = [True, False]
+# param_grid = [
+#     {
+#         'scale': [None, MaxAbsScaler()],
+#         'reduce_dim': [PCA(random_state=42)],
+#         'reduce_dim__n_components': number_of_features,
+#         'classify__max_depth': max_depth,
+#         'classify__presort': presort
+#     },
+#     {
+#         'scale': [None, MaxAbsScaler()],
+#         'reduce_dim': [SelectKBest()],
+#         'reduce_dim__k': number_of_features,
+#         'classify__max_depth': max_depth,
+#         'classify__presort': presort
+#     }
+# ]
+# cv = StratifiedShuffleSplit(random_state=42)
+# grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='precision', n_jobs=-1)
+# features = f.df.as_matrix()[:, 0:-2]
+# labels = f.df.as_matrix()[:, -1]
+# grid.fit(features, labels)
+# test_classifier(grid.best_estimator_, f.df.as_matrix())
 # >>>>>>>>>>>>>>> The best Result <<<<<<<<<<<<< #
+
 '''
 Fine tuned Classifier 3: NearestCentroid - Any KNN or similar
                          algorithms are slow learners and they
@@ -359,32 +406,33 @@ Classifier Scores:        Accuracy: 0.82367
                           F1: 0.51883
                           F2: 0.62016
 '''
-pipe = Pipeline([('scale', MaxAbsScaler()),
-                 ('reduce_dim', PCA(random_state=42)),
-                 ('classify', NearestCentroid())])
 
-number_of_features = range(2, f.df.shape[1] - 1)
-shrink_threshold = [None, 0.1, 0.6, 0.7, 0.8, 0.9, 1, 2, 5, 10]
-param_grid = [
-    {
-        'scale': [None, MaxAbsScaler(), StandardScaler(), MinMaxScaler()],
-        'reduce_dim': [PCA(random_state=42)],
-        'reduce_dim__n_components': number_of_features,
-        'classify__metric': ["euclidean", "manhattan"],
-        'classify__shrink_threshold': shrink_threshold
-    },
-    {
-        'scale': [None, MaxAbsScaler(), StandardScaler(), MinMaxScaler()],
-        'reduce_dim': [SelectKBest()],
-        'reduce_dim__k': number_of_features,
-        'classify__metric': ["euclidean", "manhattan"],
-        'classify__shrink_threshold': shrink_threshold
-    }
-]
-cv = StratifiedShuffleSplit(random_state=42)
-grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='precision', n_jobs=-1)
-features = f.df.as_matrix()[:, 0:-2]
-labels = f.df.as_matrix()[:, -1]
-grid.fit(features, labels)
-test_classifier(grid.best_estimator_, f.df.as_matrix())
-dump_classifier_and_data(grid.best_estimator_, f.df.as_matrix(), f.df.columns.values)
+# pipe = Pipeline([('scale', MaxAbsScaler()),
+#                  ('reduce_dim', PCA(random_state=42)),
+#                  ('classify', NearestCentroid())])
+#
+# number_of_features = range(2, f.df.shape[1] - 1)
+# shrink_threshold = [None, 0.1, 0.6, 0.7, 0.8, 0.9, 1, 2, 5, 10]
+# param_grid = [
+#     {
+#         'scale': [None, MaxAbsScaler(), StandardScaler(), MinMaxScaler()],
+#         'reduce_dim': [PCA(random_state=42)],
+#         'reduce_dim__n_components': number_of_features,
+#         'classify__metric': ["euclidean", "manhattan"],
+#         'classify__shrink_threshold': shrink_threshold
+#     },
+#     {
+#         'scale': [None, MaxAbsScaler(), StandardScaler(), MinMaxScaler()],
+#         'reduce_dim': [SelectKBest()],
+#         'reduce_dim__k': number_of_features,
+#         'classify__metric': ["euclidean", "manhattan"],
+#         'classify__shrink_threshold': shrink_threshold
+#     }
+# ]
+# cv = StratifiedShuffleSplit(random_state=42)
+# grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='precision', n_jobs=-1)
+# features = f.df.as_matrix()[:, 0:-2]
+# labels = f.df.as_matrix()[:, -1]
+# grid.fit(features, labels)
+# test_classifier(grid.best_estimator_, f.df.as_matrix())
+# dump_classifier_and_data(grid.best_estimator_, f.df.as_matrix(), f.df.columns.values)
