@@ -12,7 +12,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MaxAbsScaler, StandardScaler, MinMaxScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from tester import test_classifier
+from tester import test_classifier, dump_classifier_and_data
 import timeit
 
 # ------------ Creating a Feature Object ------------ #
@@ -84,158 +84,161 @@ imp = feature_importance.Importance(algo='*', fObj=f)
 
 f.df.to_pickle('final_df.pkl')
 
-# # ~~~~~~~~~~~~~~~~~~ Classification ~~~~~~~~~~~~~~~~~~ #
-#
-# # Model 1
-#
-# '''
-#     Feature Selection:
-#         algorithm: Random Forest
-#         n_estimator: 250
-#         random_state: 42
-#         number of features: 5
-#         cross validation: False
-#
-#     Feature Scaling:
-#         None
-#
-#     Cross Validation:
-#         None
-#
-#     Classification:
-#         algo: Gaussian Naive Bayes
-# '''
+# ~~~~~~~~~~~~~~~~~~ Classification ~~~~~~~~~~~~~~~~~~ #
+
+# Model 1
+
+'''
+    Feature Selection:
+        algorithm: Random Forest
+        n_estimator: 250
+        random_state: 42
+        number of features: 5
+        cross validation: False
+
+    Feature Scaling:
+        None
+
+    Cross Validation:
+        None
+
+    Classification:
+        algo: Gaussian Naive Bayes
+'''
+
 # important_features_rf = imp.get_importance_rf(save=False).keys()
 # dataset_rf = f.adhoc_feature_parse(columns=important_features_rf, merge_train_test=True)
 # clf = GaussianNB()
 # start = timeit.timeit()
 # test_classifier(clf, dataset_rf)
 # print "Elapsed: " + str(timeit.timeit() - start)
-#
-# # Model 2
-#
-# '''
-#     Feature Selection:
-#         algorithm: XGBoost
-#         early_stopping_rounds: 900
-#         num_boosting_rounds: 100
-#         eval_metric: error@0.7
-#         objective: binary:logistic
-#         random_state: 42
-#         learning_rate: 0.01
-#         max_depth: 8
-#         subsample: 0.8
-#         colsample_bytree: 0.8
-#         cross validation: False
-#
-#     Feature Scaling:
-#         None
-#
-#     Cross Validation:
-#         None
-#
-#     Classification:
-#         algo: AdaBoostClassifier
-# '''
-#
+
+# Model 2
+
+'''
+    Feature Selection:
+        algorithm: XGBoost
+        early_stopping_rounds: 900
+        num_boosting_rounds: 100
+        eval_metric: error@0.7
+        objective: binary:logistic
+        random_state: 42
+        learning_rate: 0.01
+        max_depth: 8
+        subsample: 0.8
+        colsample_bytree: 0.8
+        cross validation: False
+
+    Feature Scaling:
+        None
+
+    Cross Validation:
+        None
+
+    Classification:
+        algo: AdaBoostClassifier
+'''
+
 # important_features_xgb = imp.get_importance_xgboost(save=False).keys()
 # dataset_xgb = f.adhoc_feature_parse(columns=important_features_xgb, merge_train_test=True)
 # clf = AdaBoostClassifier(DecisionTreeClassifier(min_samples_split=10), random_state=42)
 # start = timeit.timeit()
 # test_classifier(clf, dataset_xgb)
 # print "Elapsed: " + str(timeit.timeit() - start)
-#
-# # Model 3
-#
-# '''
-#     Feature Selection:
-#         algorithm: XGBoost
-#         early_stopping_rounds: 900
-#         num_boosting_rounds: 100
-#         eval_metric: error@0.7
-#         objective: binary:logistic
-#         random_state: 42
-#         learning_rate: best from CV
-#         max_depth: best from CV
-#         subsample: best from CV
-#         colsample_bytree: best from CV
-#         cross validation: True
-#
-#     Feature Scaling:
-#         None
-#
-#     Cross Validation:
-#         None
-#
-#     Classification:
-#         algo: NearestCentroid
-# '''
-#
+
+# Model 3
+
+'''
+    Feature Selection:
+        algorithm: XGBoost
+        early_stopping_rounds: 900
+        num_boosting_rounds: 100
+        eval_metric: error@0.7
+        objective: binary:logistic
+        random_state: 42
+        learning_rate: best from CV
+        max_depth: best from CV
+        subsample: best from CV
+        colsample_bytree: best from CV
+        cross validation: True
+
+    Feature Scaling:
+        None
+
+    Cross Validation:
+        None
+
+    Classification:
+        algo: NearestCentroid
+'''
+
 # important_features_xgb_cv = imp.get_importance_xgboost(save=False, cv=True).keys()
 # dataset_xgb_cv = f.adhoc_feature_parse(columns=important_features_xgb_cv, merge_train_test=True)
 # clf = NearestCentroid(shrink_threshold=0.1)
 # start = timeit.timeit()
 # test_classifier(clf, dataset_xgb_cv)
 # print "Elapsed: " + str(timeit.timeit() - start)
-#
-# # Model 4
-#
-# '''
-#     Feature Selection:
-#         algo: K Best
-#         k: 5
-#         eval_func: f_classif
-#
-#     Feature Scaling:
-#         None
-#
-#     Cross Validation:
-#         None
-#
-#     Classification:
-#         algo: SVC
-# '''
-#
+
+# Model 4
+
+'''
+    Feature Selection:
+        algo: K Best
+        k: 5
+        eval_func: f_classif
+
+    Feature Scaling:
+        None
+
+    Cross Validation:
+        None
+
+    Classification:
+        algo: SVC
+'''
+
 # important_features_kbest = imp.get_importance_kBest(k=5, eval_func='classif').keys()
 # dataset_kbest = f.adhoc_feature_parse(columns=important_features_kbest, merge_train_test=True)
 # clf = SVC(C=1000, kernel='rbf', gamma=1)
 # start = timeit.timeit()
 # test_classifier(clf, dataset_kbest)
 # print "Elapsed: " + str(timeit.timeit() - start)
-# # Model 5
-#
-# '''
-#     Feature Selection:
-#         algorithm: XGBoost
-#         early_stopping_rounds: 900
-#         num_boosting_rounds: 100
-#         eval_metric: error@0.7
-#         objective: binary:logistic
-#         random_state: 42
-#         learning_rate: best from CV
-#         max_depth: best from CV
-#         subsample: best from CV
-#         colsample_bytree: best from CV
-#         cross validation: True
-#
-#     Feature Scaling:
-#         None
-#
-#     Cross Validation:
-#         None
-#
-#     Classification:
-#         algo: Gradient Boosting
-# '''
+
+# Model 5
+
+'''
+    Feature Selection:
+        algorithm: XGBoost
+        early_stopping_rounds: 900
+        num_boosting_rounds: 100
+        eval_metric: error@0.7
+        objective: binary:logistic
+        random_state: 42
+        learning_rate: best from CV
+        max_depth: best from CV
+        subsample: best from CV
+        colsample_bytree: best from CV
+        cross validation: True
+
+    Feature Scaling:
+        None
+
+    Cross Validation:
+        None
+
+    Classification:
+        algo: Gradient Boosting
+'''
+
 # start = timeit.timeit()
 # clf = GradientBoostingClassifier()
 # test_classifier(clf, dataset_xgb_cv)
 # print "Elapsed: " + str(timeit.timeit() - start)
-#
-#
-# # ------------- Fine tune Classifiers ------------- #
-#
-# # >>>>>>>>>  SVC with penalty for balanced score <<<<<<<< #
+
+
+# ------------- Fine tune Classifiers ------------- #
+
+# >>>>>>>>>  SVC with penalty for balanced score <<<<<<<< #
 # '''
 # Fine tuned Classifier 1: SVC - with penalty of 1/3.3
 #                           for biased class. SVC expects
@@ -324,63 +327,64 @@ f.df.to_pickle('final_df.pkl')
 # labels = f.df.as_matrix()[:, -1]
 # grid.fit(features, labels)
 # test_classifier(grid.best_estimator_, f.df.as_matrix())
-#
-# # >>>>>>>>>>>>>>> The best Result <<<<<<<<<<<<< #
-# '''
-# Fine tuned Classifier 3: NearestCentroid - Any KNN or similar
-#                          algorithms are slow learners and they
-#                          actually don't need class labels for training
-#                          to predict. But this dataset is smaller and
-#                          hence using KNN like algorithms won't be a problem.
-#                          KNN or similar algorithms are always known for its
-#                          balanced performance. NearestCentroid is better
-#                          version of KNN. Instead of just looking at the Neighbours
-#                          which can an outlier and cause inaccuracy in the classifier,
-#                          NearestCentroid finds the center of the data and the
-#                          uses different distance formula to classify the belongings
-#                          of different points in different region.
-#
-# Classifier Result:       NearestCentroid give the best result. It not only
-#                          gives a very goof F2 score but also pulls up the F1
-#                          score. The enron dataset is not so good but it still
-#                          gives a good result. Although it brings down the accuracy
-#                          a little bit than Naive Bayes. But we are not bothered
-#                          about accuracy though. Note that we are cross-validating
-#                          with ```precision``` score and not with ```f1``` score.
-#                          This compromises the recall to get better precision. Even
-#                          after this recall is not that bad.
-#
-# Classifier Scores:        Accuracy: 0.82367
-#                           Precision: 0.40778
-#                           Recall: 0.71300
-#                           F1: 0.51883
-#                           F2: 0.62016
-# '''
-# pipe = Pipeline([('scale', MaxAbsScaler()),
-#                  ('reduce_dim', PCA(random_state=42)),
-#                  ('classify', NearestCentroid())])
-#
-# number_of_features = range(2, f.df.shape[1] - 1)
-# shrink_threshold = [None, 0.1, 0.6, 0.7, 0.8, 0.9, 1, 2, 5, 10]
-# param_grid = [
-#     {
-#         'scale': [None, MaxAbsScaler(), StandardScaler(), MinMaxScaler()],
-#         'reduce_dim': [PCA(random_state=42)],
-#         'reduce_dim__n_components': number_of_features,
-#         'classify__metric': ["euclidean", "manhattan"],
-#         'classify__shrink_threshold': shrink_threshold
-#     },
-#     {
-#         'scale': [None, MaxAbsScaler(), StandardScaler(), MinMaxScaler()],
-#         'reduce_dim': [SelectKBest()],
-#         'reduce_dim__k': number_of_features,
-#         'classify__metric': ["euclidean", "manhattan"],
-#         'classify__shrink_threshold': shrink_threshold
-#     }
-# ]
-# cv = StratifiedShuffleSplit(random_state=42)
-# grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='precision', n_jobs=-1)
-# features = f.df.as_matrix()[:, 0:-2]
-# labels = f.df.as_matrix()[:, -1]
-# grid.fit(features, labels)
-# test_classifier(grid.best_estimator_, f.df.as_matrix())
+
+# >>>>>>>>>>>>>>> The best Result <<<<<<<<<<<<< #
+'''
+Fine tuned Classifier 3: NearestCentroid - Any KNN or similar
+                         algorithms are slow learners and they
+                         actually don't need class labels for training
+                         to predict. But this dataset is smaller and
+                         hence using KNN like algorithms won't be a problem.
+                         KNN or similar algorithms are always known for its
+                         balanced performance. NearestCentroid is better
+                         version of KNN. Instead of just looking at the Neighbours
+                         which can an outlier and cause inaccuracy in the classifier,
+                         NearestCentroid finds the center of the data and the
+                         uses different distance formula to classify the belongings
+                         of different points in different region.
+
+Classifier Result:       NearestCentroid give the best result. It not only
+                         gives a very goof F2 score but also pulls up the F1
+                         score. The enron dataset is not so good but it still
+                         gives a good result. Although it brings down the accuracy
+                         a little bit than Naive Bayes. But we are not bothered
+                         about accuracy though. Note that we are cross-validating
+                         with ```precision``` score and not with ```f1``` score.
+                         This compromises the recall to get better precision. Even
+                         after this recall is not that bad.
+
+Classifier Scores:        Accuracy: 0.82367
+                          Precision: 0.40778
+                          Recall: 0.71300
+                          F1: 0.51883
+                          F2: 0.62016
+'''
+pipe = Pipeline([('scale', MaxAbsScaler()),
+                 ('reduce_dim', PCA(random_state=42)),
+                 ('classify', NearestCentroid())])
+
+number_of_features = range(2, f.df.shape[1] - 1)
+shrink_threshold = [None, 0.1, 0.6, 0.7, 0.8, 0.9, 1, 2, 5, 10]
+param_grid = [
+    {
+        'scale': [None, MaxAbsScaler(), StandardScaler(), MinMaxScaler()],
+        'reduce_dim': [PCA(random_state=42)],
+        'reduce_dim__n_components': number_of_features,
+        'classify__metric': ["euclidean", "manhattan"],
+        'classify__shrink_threshold': shrink_threshold
+    },
+    {
+        'scale': [None, MaxAbsScaler(), StandardScaler(), MinMaxScaler()],
+        'reduce_dim': [SelectKBest()],
+        'reduce_dim__k': number_of_features,
+        'classify__metric': ["euclidean", "manhattan"],
+        'classify__shrink_threshold': shrink_threshold
+    }
+]
+cv = StratifiedShuffleSplit(random_state=42)
+grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='precision', n_jobs=-1)
+features = f.df.as_matrix()[:, 0:-2]
+labels = f.df.as_matrix()[:, -1]
+grid.fit(features, labels)
+test_classifier(grid.best_estimator_, f.df.as_matrix())
+dump_classifier_and_data(grid.best_estimator_, f.df.as_matrix(), f.df.columns.values)
