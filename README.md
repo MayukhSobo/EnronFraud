@@ -60,5 +60,5 @@ The most appropriate algorithm for the specific case was **Nearest Centroid**. B
 
 ## Project Report
 
-**EDA:**  ![eda](eda.ipynb) 
-Submission Report:  ![report](https://github.com/MayukhSobo/EnronFraud/raw/master/Enron%20Submission%20Free.pdf)
+**EDA:**  [eda](eda.ipynb) 
+Submission Report:  [report](https://github.com/MayukhSobo/EnronFraud/raw/master/Enron%20Submission%20Free.pdf)
