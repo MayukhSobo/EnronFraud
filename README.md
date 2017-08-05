@@ -50,7 +50,7 @@ The features included in the dataset can be divided in three categories, Payment
 | ***shared receipt with poi*** | Number of emails addressed by someone else to a POI where this person was CC. |
 ## Algorithm Selection
 
-The most appropriate algorithm for the specific case was **Nearest Centroid**. Bellow you may find all the evaluated algorithms and their performance.
+The most appropriate algorithm for the specific case was **Nearest Centroid**. Below you may find all the evaluated algorithms and their performance.
 
 |           Category           |        Algorithm       |   Accuracy  |  Precision  |    Recall   |      F1     |      F2     |
 |:----------------------------:|:----------------------:|:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|
@@ -70,4 +70,4 @@ The most appropriate algorithm for the specific case was **Nearest Centroid**. B
 
 **NOTE 2:** Please use python 2 environment. This source code might not work with python 3
 
-**NOTE 3:** For package compatibility, make sure the virtial environment is made using the given ```requirement.txt``` file
+**NOTE 3:** For package compatibility, make sure the virtual environment is made using the given ```requirement.txt``` file
