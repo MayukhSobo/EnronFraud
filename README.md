@@ -63,3 +63,10 @@ The most appropriate algorithm for the specific case was **Nearest Centroid**. B
 **EDA:**  [eda](eda.ipynb)
 
 **Submission Report:**  [report](https://github.com/MayukhSobo/EnronFraud/raw/master/Enron%20Submission%20Free.pdf)
+
+
+**NOTE 1:** Please do not use any other ```tester.py``` file other than the mentioned one.
+
+**NOTE 2:** Please use python 2 environment. This source code might not work with python 3
+
+**NOTE 3:** For package compatibility, make sure the virtial environment is made using the given ```requirement.txt``` file
