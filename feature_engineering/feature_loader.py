@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from abc import ABCMeta, abstractmethod
 from sklearn.model_selection import train_test_split
-from feature_format import feature_format, target_feature_split
+# from feature_format import feature_format, target_feature_split
 
 DATA_PICKLE_SOURCE = 'data/final_project_dataset.pkl'
 
@@ -29,6 +29,7 @@ class Features:
 
         # Removing the outliers
         self.data_dict.pop('TOTAL')
+        self.data_dict.pop('THE TRAVEL AGENCY IN THE PARK')
 
     # self._dataframe = pd.DataFrame.from_records(self.data_dict.values(),
     # 	index=self.data_dict.keys())
@@ -53,16 +54,20 @@ class Features:
 
 
 class FeatureExtract(Features):
-    def __init__(self, testSize=0.3, randomState=42, target='poi', featureList="*"):
+    def __init__(self, testSize=0.3, randomState=42, target='poi'):
         super(self.__class__, self).__init__(target)
         FeatureExtract.prepare_features()
         self.rs = randomState
         self.ts = testSize
         self.df_test = None
         self.df_train = None
-        labels, features = self._parse_features(featureList)
-        self.df = pd.DataFrame(features, columns=self.featureList[1::])
-        self.df[FeatureExtract.targetCol] = np.array(labels, dtype=int)
+        self.df = pd.DataFrame.from_records(self.data_dict.values(), index=self.data_dict.keys())
+        targetColumn = self.df[FeatureExtract.targetCol]
+        self.df.drop(FeatureExtract.targetCol, inplace=True, axis=1)
+        targetColumn = targetColumn.astype(int)
+        self.df[FeatureExtract.targetCol] = targetColumn
+        self.df.replace('NaN', 0, inplace=True)
+        self.df = self.df[FeatureExtract.featureCols + [FeatureExtract.targetCol]]
         self.orig_df = deepcopy(self.df)
         # self.feature_splits()
         # self.df = self.df_train.append(self.df_test)
@@ -77,15 +82,15 @@ class FeatureExtract(Features):
         self.df_test = pd.DataFrame(x_test, columns=FeatureExtract.featureCols)
         self.df_test[self.targetCol] = np.array(y_test, dtype=int)
 
-    def _parse_features(self, featureList):
-        if featureList == '*':
-            self.featureList = [FeatureExtract.targetCol] + FeatureExtract.featureCols
-        else:
-            if FeatureExtract.targetCol not in featureList:
-                self.featureList = [FeatureExtract.targetCol] + featureList
-        # print featureList
-        data = feature_format(self.data_dict, self.featureList, sort_keys=True)
-        return target_feature_split(data)
+    # def _parse_features(self, featureList):
+    #     if featureList == '*':
+    #         self.featureList = [FeatureExtract.targetCol] + FeatureExtract.featureCols
+    #     else:
+    #         if FeatureExtract.targetCol not in featureList:
+    #             self.featureList = [FeatureExtract.targetCol] + featureList
+    #     # print featureList
+    #     data = feature_format(self.data_dict, self.featureList, sort_keys=True)
+    #     return target_feature_split(data)
 
     @property
     def train(self):
@@ -95,31 +100,31 @@ class FeatureExtract(Features):
     def test(self):
         return self.df_test
 
-    def adhoc_feature_parse(self, columns='*', merge_train_test=False):
-        """
-
-        :param columns: List - Columns that is to be parsed
-        :param merge_train_test: Bool - Merger the test and train
-        :return: Numpy array
-        """
-        if not isinstance(columns, list):
-            columns = list(columns)
-        if merge_train_test:
-            if columns == ['*']:
-                return self.df.as_matrix()
-            else:
-                from copy import deepcopy
-                features = deepcopy(columns)
-                features.append('poi')
-                return self.df[features].as_matrix()
-        else:
-            if columns == ['*']:
-                return self.train.as_matrix(), self.test.as_matrix()
-            else:
-                from copy import deepcopy
-                features = deepcopy(columns)
-                features.append('poi')
-                return self.train[columns].as_matrix(), self.test[columns].as_matrix()
+    # def adhoc_feature_parse(self, columns='*', merge_train_test=False):
+    #     """
+    #
+    #     :param columns: List - Columns that is to be parsed
+    #     :param merge_train_test: Bool - Merger the test and train
+    #     :return: Numpy array
+    #     """
+    #     if not isinstance(columns, list):
+    #         columns = list(columns)
+    #     if merge_train_test:
+    #         if columns == ['*']:
+    #             return self.df.as_matrix()
+    #         else:
+    #             from copy import deepcopy
+    #             features = deepcopy(columns)
+    #             features.append('poi')
+    #             return self.df[features].as_matrix()
+    #     else:
+    #         if columns == ['*']:
+    #             return self.train.as_matrix(), self.test.as_matrix()
+    #         else:
+    #             from copy import deepcopy
+    #             features = deepcopy(columns)
+    #             features.append('poi')
+    #             return self.train[columns].as_matrix(), self.test[columns].as_matrix()
 
 # 	f = FeatureExtract()
 # 	# print f.train.head(n=1)

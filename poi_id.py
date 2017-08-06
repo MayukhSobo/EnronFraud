@@ -16,14 +16,18 @@ from tester import test_classifier, dump_classifier_and_data
 
 def naive_bayes(orig_dataset=False, fine_tune=False, feature_select=None, folds=1000, dump=False, **kwargs):
     clf = GaussianNB()
+    dataset = f.df.to_dict('index')
     if orig_dataset:
-        dataset = f.orig_df.as_matrix()
-        test_classifier(clf, dataset, folds)
+        tester_dataset = f.orig_df.to_dict('index')
+        tester_features = list(f.orig_df.columns.values)
+        tester_features.remove('poi')
+        tester_features = ['poi'] + tester_features
+        test_classifier(clf, tester_dataset, tester_features, folds)
         return
     if not fine_tune:
         if feature_select not in ['kbest', 'xgboost', 'random_forest', 'xgboost_cv']:
-            dataset = f.df.as_matrix()
-            test_classifier(clf, dataset, folds=folds)
+            features = [f.targetCol] + f.featureCols
+            test_classifier(clf, dataset, features, folds=folds)
         else:
             if feature_select.lower() == 'kbest':
                 k = kwargs.get('k')
@@ -38,9 +42,10 @@ def naive_bayes(orig_dataset=False, fine_tune=False, feature_select=None, folds=
             else:
                 save = kwargs.get('save')
                 imp_features = imp.get_importance_xgboost(save=save, cv=True).keys()
-            dataset = f.adhoc_feature_parse(columns=imp_features, merge_train_test=True)
-            test_classifier(clf, dataset, folds)
+            imp_features = [f.targetCol] + imp_features
+            test_classifier(clf, dataset, imp_features, folds)
     else:
+        tester_features = [f.targetCol] + f.featureCols
         pipe = Pipeline([('scale', MaxAbsScaler()),
                          ('reduce_dim', PCA(random_state=42)),
                          ('classify', clf)])
@@ -56,21 +61,25 @@ def naive_bayes(orig_dataset=False, fine_tune=False, feature_select=None, folds=
         features = f.df.as_matrix()[:, 0:-2]
         labels = f.df.as_matrix()[:, -1]
         grid.fit(features, labels)
-        test_classifier(grid.best_estimator_, f.df.as_matrix())
+        test_classifier(grid.best_estimator_, dataset, tester_features, folds)
         if dump:
-            dump_classifier_and_data(grid.best_estimator_, f.df.as_matrix(), f.df.columns.values)
+            dump_classifier_and_data(grid.best_estimator_, dataset, tester_features)
 
 
 def svc(orig_dataset=False, fine_tune=False, feature_select=None, folds=1000, dump=False, **kwargs):
     clf = SVC(class_weight={0.: 1, 1.: 3.3})
+    dataset = f.df.to_dict('index')
     if orig_dataset:
-        dataset = f.orig_df.as_matrix()
-        test_classifier(clf, dataset, folds)
+        tester_dataset = f.orig_df.to_dict('index')
+        tester_features = list(f.orig_df.columns.values)
+        tester_features.remove('poi')
+        tester_features = ['poi'] + tester_features
+        test_classifier(clf, tester_dataset, tester_features, folds)
         return
     if not fine_tune:
         if feature_select not in ['kbest', 'xgboost', 'random_forest', 'xgboost_cv']:
-            dataset = f.df.as_matrix()
-            test_classifier(clf, dataset, folds=folds)
+            features = [f.targetCol] + f.featureCols
+            test_classifier(clf, dataset, features, folds=folds)
         else:
             if feature_select.lower() == 'kbest':
                 k = kwargs.get('k')
@@ -85,9 +94,10 @@ def svc(orig_dataset=False, fine_tune=False, feature_select=None, folds=1000, du
             else:
                 save = kwargs.get('save')
                 imp_features = imp.get_importance_xgboost(save=save, cv=True).keys()
-            dataset = f.adhoc_feature_parse(columns=imp_features, merge_train_test=True)
-            test_classifier(clf, dataset, folds)
+            imp_features = [f.targetCol] + imp_features
+            test_classifier(clf, dataset, imp_features, folds)
     else:
+        tester_features = [f.targetCol] + f.featureCols
         pipe = Pipeline([('scale', MaxAbsScaler()),
                          ('reduce_dim', PCA(random_state=42)),
                          ('classify', SVC(class_weight={0.: 1, 1.: 3.3}))])
@@ -117,21 +127,25 @@ def svc(orig_dataset=False, fine_tune=False, feature_select=None, folds=1000, du
         features = f.df.as_matrix()[:, 0:-2]
         labels = f.df.as_matrix()[:, -1]
         grid.fit(features, labels)
-        test_classifier(grid.best_estimator_, f.df.as_matrix())
+        test_classifier(grid.best_estimator_, dataset, tester_features, folds)
         if dump:
-            dump_classifier_and_data(grid.best_estimator_, f.df.as_matrix(), f.df.columns.values)
+            dump_classifier_and_data(grid.best_estimator_, dataset, tester_features)
 
 
 def decisionTree(orig_dataset=False, fine_tune=False, feature_select=None, folds=1000, dump=False, **kwargs):
-    clf = DecisionTreeClassifier(class_weight={0.: 1, 1.: 4})
+    clf = DecisionTreeClassifier(class_weight={0.: 1, 1.: 3})
+    dataset = f.df.to_dict('index')
     if orig_dataset:
-        dataset = f.orig_df.as_matrix()
-        test_classifier(clf, dataset, folds)
+        tester_dataset = f.orig_df.to_dict('index')
+        tester_features = list(f.orig_df.columns.values)
+        tester_features.remove('poi')
+        tester_features = ['poi'] + tester_features
+        test_classifier(clf, tester_dataset, tester_features, folds)
         return
     if not fine_tune:
         if feature_select not in ['kbest', 'xgboost', 'random_forest', 'xgboost_cv']:
-            dataset = f.df.as_matrix()
-            test_classifier(clf, dataset, folds=folds)
+            features = [f.targetCol] + f.featureCols
+            test_classifier(clf, dataset, features, folds=folds)
         else:
             if feature_select.lower() == 'kbest':
                 k = kwargs.get('k')
@@ -146,9 +160,10 @@ def decisionTree(orig_dataset=False, fine_tune=False, feature_select=None, folds
             else:
                 save = kwargs.get('save')
                 imp_features = imp.get_importance_xgboost(save=save, cv=True).keys()
-            dataset = f.adhoc_feature_parse(columns=imp_features, merge_train_test=True)
-            test_classifier(clf, dataset, folds)
+            imp_features = [f.targetCol] + imp_features
+            test_classifier(clf, dataset, imp_features, folds)
     else:
+        tester_features = [f.targetCol] + f.featureCols
         pipe = Pipeline([('scale', MaxAbsScaler()),
                          ('reduce_dim', PCA(random_state=42)),
                          ('classify', DecisionTreeClassifier(class_weight={0.: 1, 1.: 4}, random_state=42))])
@@ -177,20 +192,25 @@ def decisionTree(orig_dataset=False, fine_tune=False, feature_select=None, folds
         features = f.df.as_matrix()[:, 0:-2]
         labels = f.df.as_matrix()[:, -1]
         grid.fit(features, labels)
-        test_classifier(grid.best_estimator_, f.df.as_matrix())
+        test_classifier(grid.best_estimator_, dataset, tester_features, folds)
         if dump:
-            dump_classifier_and_data(grid.best_estimator_, f.df.as_matrix(), f.df.columns.values)
+            dump_classifier_and_data(grid.best_estimator_, dataset, tester_features)
 
 
 def nearestCentroid(orig_dataset=False, fine_tune=False, feature_select=None, folds=1000, dump=False, **kwargs):
     clf = NearestCentroid()
+    dataset = f.df.to_dict('index')
     if orig_dataset:
-        dataset = f.orig_df.as_matrix()
-        test_classifier(clf, dataset, folds)
+        tester_dataset = f.orig_df.to_dict('index')
+        tester_features = list(f.orig_df.columns.values)
+        tester_features.remove('poi')
+        tester_features = ['poi'] + tester_features
+        test_classifier(clf, tester_dataset, tester_features, folds)
+        return
     if not fine_tune:
         if feature_select not in ['kbest', 'xgboost', 'random_forest', 'xgboost_cv']:
-            dataset = f.df.as_matrix()
-            test_classifier(clf, dataset, folds=folds)
+            features = [f.targetCol] + f.featureCols
+            test_classifier(clf, dataset, features, folds=folds)
         else:
             if feature_select.lower() == 'kbest':
                 k = kwargs.get('k')
@@ -205,9 +225,10 @@ def nearestCentroid(orig_dataset=False, fine_tune=False, feature_select=None, fo
             else:
                 save = kwargs.get('save')
                 imp_features = imp.get_importance_xgboost(save=save, cv=True).keys()
-            dataset = f.adhoc_feature_parse(columns=imp_features, merge_train_test=True)
-            test_classifier(clf, dataset, folds)
+            imp_features = [f.targetCol] + imp_features
+            test_classifier(clf, dataset, imp_features, folds)
     else:
+        tester_features = [f.targetCol] + f.featureCols
         pipe = Pipeline([('scale', MaxAbsScaler()),
                          ('reduce_dim', PCA(random_state=42)),
                          ('classify', NearestCentroid())])
@@ -235,11 +256,12 @@ def nearestCentroid(orig_dataset=False, fine_tune=False, feature_select=None, fo
         features = f.df.as_matrix()[:, 0:-2]
         labels = f.df.as_matrix()[:, -1]
         grid.fit(features, labels)
-        test_classifier(grid.best_estimator_, f.df.as_matrix())
+        test_classifier(grid.best_estimator_, dataset, tester_features, folds)
         if dump:
-            dump_classifier_and_data(grid.best_estimator_, f.df.as_matrix(), f.df.columns.values)
+            dump_classifier_and_data(grid.best_estimator_, dataset, tester_features)
 # ------------ Creating a Feature Object ------------ #
 f = feature_loader.FeatureExtract()
+
 # ------------ Creating a Axillary  feature operation Object ---------- #
 aux = feature_misc.Aux('create', f)
 #  ------------------ Create a new features ------------------ #
@@ -281,32 +303,32 @@ feature_loader.FeatureExtract.featureCols.remove('bonusPlusSalaryPlusIncentives'
 feature_loader.FeatureExtract.featureCols.remove('deferral_payments')
 # ------------ Remove the features that are not required -------------- #
 # This feature is kept manual because it is not mandatory
-f.df.drop(['from_this_person_to_poi',
-           'from_messages',
-           'from_poi_to_this_person',
-           'to_messages',
-           'bonusPlusSalaryPlusIncentives',
-           'bonus',
-           'salary',
-           'long_term_incentive',
-           'from_this_person_to_poi_stand',
-           'from_poi_to_this_person_stand',
-           'expenses',
-           'other',
-           'total_payments',
-           'deferral_payments'],
-          axis=1, inplace=True)
+f.df = f.df[feature_loader.FeatureExtract.featureCols +
+            [feature_loader.FeatureExtract.targetCol]]
+# f.df.drop(['from_this_person_to_poi',
+#            'from_messages',
+#            'from_poi_to_this_person',
+#            'to_messages',
+#            'bonusPlusSalaryPlusIncentives',
+#            'bonus',
+#            'salary',
+#            'long_term_incentive',
+#            'from_this_person_to_poi_stand',
+#            'from_poi_to_this_person_stand',
+#            'expenses',
+#            'other',
+#            'total_payments',
+#            'deferral_payments'],
+#           axis=1, inplace=True)
 #  ------------ Split the dataset for train and test --------- #
 f.feature_splits()
+# print f.train.shape
 # -------------- Feature Selection ---------------- #
-#
 imp = feature_importance.Importance(algo='*', fObj=f)
 # print imp.get_importance_rf(save=False)
 # print imp.get_importance_xgboost(save=False, cv=True)
 # print imp.get_importance_kBest(k=5, eval_func='classif')
-
 f.df.to_pickle('final_df.pkl')
-
 # ~~~~~~~~~~~~~~~~~~ Classification ~~~~~~~~~~~~~~~~~~ #
 
 # Model 1
@@ -431,11 +453,11 @@ Classifier Result:        Balanced result for balanced precision
                           and best balanced score can not be more
                           than 0.4.
 
-Classifier Scores:        Accuracy: 0.83920
-                          Precision: 0.38669
-                          Recall: 0.35150
-                          F1: 0.36826
-                          F2: 0.35802
+Classifier Scores:        Accuracy: 0.84113
+                          Precision: 0.39051
+                          Recall: 0.34150
+                          F1: 0.36436
+                          F2: 0.35029
 '''
 # With feature creation and feature feature selection using GridSearchCV
 # svc(fine_tune=True, dump=True)
@@ -455,11 +477,11 @@ Classifier Result:       Because of the PCA, the Naive Bayes performs
                          better than the SVC and it's performance is not
                          affected by biased class distribution.
 
-Classifier Scores:        Accuracy: 0.87580
-                          Precision: 0.55170
-                          Recall: 0.36550
-                          F1: 0.43970
-                          F2: 0.39196
+Classifier Scores:        Accuracy: 0.85953
+                          Precision: 0.46806
+                          Recall: 0.39200
+                          F1: 0.42667
+                          F2: 0.40517
 '''
 # With feature creation and feature feature selection using GridSearchCV
 # naive_bayes(fine_tune=True, dump=True)
@@ -475,11 +497,11 @@ Classifier Result:       Decision Tree performs best if we tune
                          parameter. The presort parameter is is used because
                          sorted dataset training time is comparatively lesser
 
-Classifier Scores:        Accuracy: 0.85140
-                          Precision: 0.44831
-                          Recall: 0.49650
-                          F1: 0.47117
-                          F2: 0.48605
+Classifier Scores:        Accuracy: 0.82573
+                          Precision: 0.35068
+                          Recall: 0.36050
+                          F1: 0.35552
+                          F2: 0.35849
 '''
 # With feature creation and feature feature selection using GridSearchCV
 # decisionTree(fine_tune=True, dump=True)
@@ -509,11 +531,11 @@ Classifier Result:       NearestCentroid give the best result. It not only
                          This compromises the recall to get better precision. Even
                          after this recall is not that bad.
 
-Classifier Scores:        Accuracy: 0.82367
-                          Precision: 0.40778
-                          Recall: 0.71300
-                          F1: 0.51883
-                          F2: 0.62016
+Classifier Scores:        Accuracy: 0.83333
+                          Precision: 0.42573
+                          Recall: 0.71650
+                          F1: 0.53410
+                          F2: 0.63039
 '''
 # With feature creation and feature feature selection using GridSearchCV
 nearestCentroid(fine_tune=True, dump=True)

@@ -11,10 +11,11 @@
 """
 
 import pickle
+# import sys
 from sklearn.model_selection import StratifiedShuffleSplit
 
-# sys.path.append("../feature_engineering/")
-# from feature_format import featureFormat, targetFeatureSplit
+# sys.path.append("../tools/")
+from feature_engineering.feature_format import feature_format, target_feature_split
 
 PERF_FORMAT_STRING = "\
 \tAccuracy: {:>0.{display_precision}f}\tPrecision: {:>0.{display_precision}f}\t\
@@ -23,12 +24,9 @@ RESULTS_FORMAT_STRING = "\tTotal predictions: {:4d}\tTrue positives: {:4d}\tFals
 \tFalse negatives: {:4d}\tTrue negatives: {:4d}"
 
 
-def test_classifier(clf, dataset, folds=1000):
-    # data = featureFormat(dataset, feature_list, sort_keys=True)
-    # labels, features = targetFeatureSplit(data)
-    labels = dataset[:, -1]
-    labels = labels.astype(int)
-    features = dataset[:, 0:-2]
+def test_classifier(clf, dataset, feature_list, folds=1000):
+    data = feature_format(dataset, feature_list, sort_keys=True)
+    labels, features = target_feature_split(data)
     cv = StratifiedShuffleSplit(folds, random_state=42)
     true_negatives = 0
     false_negatives = 0
@@ -46,7 +44,7 @@ def test_classifier(clf, dataset, folds=1000):
             features_test.append(features[jj])
             labels_test.append(labels[jj])
 
-    #     ### fit the classifier using training set, and test on test set
+        # ## fit the classifier using training set, and test on test set
         clf.fit(features_train, labels_train)
         predictions = clf.predict(features_test)
         for prediction, truth in zip(predictions, labels_test):
@@ -75,10 +73,9 @@ def test_classifier(clf, dataset, folds=1000):
         print RESULTS_FORMAT_STRING.format(total_predictions, true_positives, false_positives, false_negatives,
                                            true_negatives)
         print ""
-    except ZeroDivisionError:
+    except:
         print "Got a divide by zero when trying out:", clf
-    except NameError:
-        print "Precision or recall may be undefined due to a lack of true positive predictions."
+        print "Precision or recall may be undefined due to a lack of true positive predicitons."
 
 
 CLF_PICKLE_FILENAME = "my_classifier.pkl"
@@ -109,7 +106,7 @@ def main():
     # ## load up student's classifier, dataset, and feature_list
     clf, dataset, feature_list = load_classifier_and_data()
     # ## Run testing script
-    test_classifier(clf, dataset)
+    test_classifier(clf, dataset, feature_list)
 
 
 if __name__ == '__main__':
