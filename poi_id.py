@@ -35,13 +35,23 @@ def naive_bayes(orig_dataset=False, fine_tune=False, feature_select=None, folds=
                 imp_features = imp.get_importance_kBest(k=k, eval_func=eval_func).keys()
             elif feature_select.lower() == 'xgboost':
                 save = kwargs.get('save')
-                imp_features = imp.get_importance_xgboost(save=save).keys()
+                k = kwargs.get('k')
+                if not k:
+                    k = 5
+                imp_features = imp.get_importance_xgboost(save=save, k=k).keys()
             elif feature_select.lower() == 'random_forest':
                 save = kwargs.get('save')
-                imp_features = imp.get_importance_rf(save=save).keys()
+                k = kwargs.get('k')
+                if not k:
+                    k = 5
+                imp_features = imp.get_importance_rf(save=save, k=k).keys()
+                print imp_features
             else:
                 save = kwargs.get('save')
-                imp_features = imp.get_importance_xgboost(save=save, cv=True).keys()
+                k = kwargs.get('k')
+                if not k:
+                    k = 5
+                imp_features = imp.get_importance_xgboost(save=save, cv=True, k=k).keys()
             imp_features = [f.targetCol] + imp_features
             test_classifier(clf, dataset, imp_features, folds)
     else:
@@ -87,13 +97,23 @@ def svc(orig_dataset=False, fine_tune=False, feature_select=None, folds=1000, du
                 imp_features = imp.get_importance_kBest(k=k, eval_func=eval_func).keys()
             elif feature_select.lower() == 'xgboost':
                 save = kwargs.get('save')
-                imp_features = imp.get_importance_xgboost(save=save).keys()
+                k = kwargs.get('k')
+                if not k:
+                    k = 5
+                imp_features = imp.get_importance_xgboost(save=save, k=k).keys()
             elif feature_select.lower() == 'random_forest':
                 save = kwargs.get('save')
-                imp_features = imp.get_importance_rf(save=save).keys()
+                k = kwargs.get('k')
+                if not k:
+                    k = 5
+                imp_features = imp.get_importance_rf(save=save, k=k).keys()
+                print imp_features
             else:
                 save = kwargs.get('save')
-                imp_features = imp.get_importance_xgboost(save=save, cv=True).keys()
+                k = kwargs.get('k')
+                if not k:
+                    k = 5
+                imp_features = imp.get_importance_xgboost(save=save, cv=True, k=k).keys()
             imp_features = [f.targetCol] + imp_features
             test_classifier(clf, dataset, imp_features, folds)
     else:
@@ -153,13 +173,23 @@ def decisionTree(orig_dataset=False, fine_tune=False, feature_select=None, folds
                 imp_features = imp.get_importance_kBest(k=k, eval_func=eval_func).keys()
             elif feature_select.lower() == 'xgboost':
                 save = kwargs.get('save')
-                imp_features = imp.get_importance_xgboost(save=save).keys()
+                k = kwargs.get('k')
+                if not k:
+                    k = 5
+                imp_features = imp.get_importance_xgboost(save=save, k=k).keys()
             elif feature_select.lower() == 'random_forest':
                 save = kwargs.get('save')
-                imp_features = imp.get_importance_rf(save=save).keys()
+                k = kwargs.get('k')
+                if not k:
+                    k = 5
+                imp_features = imp.get_importance_rf(save=save, k=k).keys()
+                print imp_features
             else:
                 save = kwargs.get('save')
-                imp_features = imp.get_importance_xgboost(save=save, cv=True).keys()
+                k = kwargs.get('k')
+                if not k:
+                    k = 5
+                imp_features = imp.get_importance_xgboost(save=save, cv=True, k=k).keys()
             imp_features = [f.targetCol] + imp_features
             test_classifier(clf, dataset, imp_features, folds)
     else:
@@ -218,13 +248,23 @@ def nearestCentroid(orig_dataset=False, fine_tune=False, feature_select=None, fo
                 imp_features = imp.get_importance_kBest(k=k, eval_func=eval_func).keys()
             elif feature_select.lower() == 'xgboost':
                 save = kwargs.get('save')
-                imp_features = imp.get_importance_xgboost(save=save).keys()
+                k = kwargs.get('k')
+                if not k:
+                    k = 5
+                imp_features = imp.get_importance_xgboost(save=save, k=k).keys()
             elif feature_select.lower() == 'random_forest':
                 save = kwargs.get('save')
-                imp_features = imp.get_importance_rf(save=save).keys()
+                k = kwargs.get('k')
+                if not k:
+                    k = 5
+                imp_features = imp.get_importance_rf(save=save, k=k).keys()
+                print imp_features
             else:
                 save = kwargs.get('save')
-                imp_features = imp.get_importance_xgboost(save=save, cv=True).keys()
+                k = kwargs.get('k')
+                if not k:
+                    k = 5
+                imp_features = imp.get_importance_xgboost(save=save, cv=True, k=k).keys()
             imp_features = [f.targetCol] + imp_features
             test_classifier(clf, dataset, imp_features, folds)
     else:
@@ -325,8 +365,8 @@ f.feature_splits()
 # print f.train.shape
 # -------------- Feature Selection ---------------- #
 imp = feature_importance.Importance(algo='*', fObj=f)
-# print imp.get_importance_rf(save=False)
-# print imp.get_importance_xgboost(save=False, cv=True)
+# print imp.get_importance_rf(save=False, k=7)
+# print imp.get_importance_xgboost(save=False, k=6)
 # print imp.get_importance_kBest(k=5, eval_func='classif')
 f.df.to_pickle('final_df.pkl')
 # ~~~~~~~~~~~~~~~~~~ Classification ~~~~~~~~~~~~~~~~~~ #
@@ -362,7 +402,7 @@ f.df.to_pickle('final_df.pkl')
         algo: Gaussian Naive Bayes
 '''
 # naive_bayes(orig_dataset=True)
-# naive_bayes(feature_select='random_forest', save=False)
+# naive_bayes(feature_select='random_forest', save=False, k=7)
 
 # Model 2
 '''
@@ -388,7 +428,7 @@ f.df.to_pickle('final_df.pkl')
     Classification:
         algo: AdaBoostClassifier
 '''
-# decisionTree(feature_select='xgboost', save=False)
+# decisionTree(feature_select='xgboost', save=False, k=6)
 
 # Model 3
 '''
@@ -415,7 +455,7 @@ f.df.to_pickle('final_df.pkl')
         algo: NearestCentroid
 '''
 # nearestCentroid(orig_dataset=True)
-# nearestCentroid(feature_select='xgboost_cv', save=False)
+# nearestCentroid(feature_select='kbest', k=5, eval_func='classif')
 
 # Model 4
 '''

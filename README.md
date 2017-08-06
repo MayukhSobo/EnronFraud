@@ -56,8 +56,8 @@ The most appropriate algorithm for the specific case was **Nearest Centroid**. B
 |:----------------------------:|:----------------------:|:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|
 |    Support Vector Machine    |           SVC          | 0.84113 | 0.39051 |   0.34150   |   0.36436   |   0.35029   |
 | **Nearest Neighbors**        | **NearestCentroid**    | 0.83333     | 0.42573     | **0.71650** | **0.53410** | **0.63039** |
-| Naive Bayes | GaussianNB | **0.85953**     | **0.46806**     | 0.39200     | 0.42667     | 0.40517     |
-| Decision Tree Classifier       | DecisionTreeClassifier    | 0.82573     | 0.35068    | 0.36050 | 0.35552 | 0.35849 |
+| Naive Bayes | GaussianNB | **0.87113**     | **0.52238**     | 0.39100     | 0.44724     | 0.41171     |
+| Decision Tree Classifier       | DecisionTreeClassifier    | 0.84847     | 0.41870    | 0.35150 | 0.38217 | 0.36316 |
 
 ## Project Report
 
