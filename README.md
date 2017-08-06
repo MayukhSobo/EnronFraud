@@ -66,7 +66,7 @@ The most appropriate algorithm for the specific case was **Nearest Centroid**. B
 **Submission Report:**  [report](https://github.com/MayukhSobo/EnronFraud/raw/master/Enron%20Submission%20Free.pdf)
 
 
-**NOTE 1:** Please do not use any other ```tester.py``` file other than the mentioned one.
+**NOTE 1:** Please do not use any other ```tester.py``` file other than the one in the repo. This may cause error while running the code.
 
 **NOTE 2:** Please use python 2 environment. This source code might not work with python 3
 
