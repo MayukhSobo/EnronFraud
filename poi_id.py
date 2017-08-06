@@ -2,7 +2,6 @@ from feature_engineering import feature_importance
 from feature_engineering import feature_loader
 from feature_engineering import feature_misc
 from sklearn.decomposition import PCA
-from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
 from sklearn.feature_selection import SelectKBest
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import StratifiedShuffleSplit
@@ -13,8 +12,232 @@ from sklearn.preprocessing import MaxAbsScaler, StandardScaler, MinMaxScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from tester import test_classifier, dump_classifier_and_data
-import timeit
 
+
+def naive_bayes(orig_dataset=False, fine_tune=False, feature_select=None, folds=1000, dump=False, **kwargs):
+    clf = GaussianNB()
+    if orig_dataset:
+        dataset = f.orig_df.as_matrix()
+        test_classifier(clf, dataset, folds)
+        return
+    if not fine_tune:
+        if feature_select not in ['kbest', 'xgboost', 'random_forest', 'xgboost_cv']:
+            dataset = f.df.as_matrix()
+            test_classifier(clf, dataset, folds=folds)
+        else:
+            if feature_select.lower() == 'kbest':
+                k = kwargs.get('k')
+                eval_func = kwargs.get('eval_func')
+                imp_features = imp.get_importance_kBest(k=k, eval_func=eval_func).keys()
+            elif feature_select.lower() == 'xgboost':
+                save = kwargs.get('save')
+                imp_features = imp.get_importance_xgboost(save=save).keys()
+            elif feature_select.lower() == 'random_forest':
+                save = kwargs.get('save')
+                imp_features = imp.get_importance_rf(save=save).keys()
+            else:
+                save = kwargs.get('save')
+                imp_features = imp.get_importance_xgboost(save=save, cv=True).keys()
+            dataset = f.adhoc_feature_parse(columns=imp_features, merge_train_test=True)
+            test_classifier(clf, dataset, folds)
+    else:
+        pipe = Pipeline([('scale', MaxAbsScaler()),
+                         ('reduce_dim', PCA(random_state=42)),
+                         ('classify', clf)])
+        number_of_components = range(2, f.df.shape[1] - 1)
+        param_grid = [
+            {
+                'scale': [None, MaxAbsScaler()],
+                'reduce_dim__n_components': number_of_components
+            }
+        ]
+        cv = StratifiedShuffleSplit(random_state=42)
+        grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='f1', n_jobs=-1)
+        features = f.df.as_matrix()[:, 0:-2]
+        labels = f.df.as_matrix()[:, -1]
+        grid.fit(features, labels)
+        test_classifier(grid.best_estimator_, f.df.as_matrix())
+        if dump:
+            dump_classifier_and_data(grid.best_estimator_, f.df.as_matrix(), f.df.columns.values)
+
+
+def svc(orig_dataset=False, fine_tune=False, feature_select=None, folds=1000, dump=False, **kwargs):
+    clf = SVC(class_weight={0.: 1, 1.: 3.3})
+    if orig_dataset:
+        dataset = f.orig_df.as_matrix()
+        test_classifier(clf, dataset, folds)
+        return
+    if not fine_tune:
+        if feature_select not in ['kbest', 'xgboost', 'random_forest', 'xgboost_cv']:
+            dataset = f.df.as_matrix()
+            test_classifier(clf, dataset, folds=folds)
+        else:
+            if feature_select.lower() == 'kbest':
+                k = kwargs.get('k')
+                eval_func = kwargs.get('eval_func')
+                imp_features = imp.get_importance_kBest(k=k, eval_func=eval_func).keys()
+            elif feature_select.lower() == 'xgboost':
+                save = kwargs.get('save')
+                imp_features = imp.get_importance_xgboost(save=save).keys()
+            elif feature_select.lower() == 'random_forest':
+                save = kwargs.get('save')
+                imp_features = imp.get_importance_rf(save=save).keys()
+            else:
+                save = kwargs.get('save')
+                imp_features = imp.get_importance_xgboost(save=save, cv=True).keys()
+            dataset = f.adhoc_feature_parse(columns=imp_features, merge_train_test=True)
+            test_classifier(clf, dataset, folds)
+    else:
+        pipe = Pipeline([('scale', MaxAbsScaler()),
+                         ('reduce_dim', PCA(random_state=42)),
+                         ('classify', SVC(class_weight={0.: 1, 1.: 3.3}))])
+
+        number_of_features = range(2, f.df.shape[1] - 1)
+
+        C_param = [0.1, 1, 10]
+        gamma_param = range(10, 30)
+        param_grid = [
+            {
+                'scale': [None, MaxAbsScaler()],
+                'reduce_dim': [PCA(random_state=42)],
+                'reduce_dim__n_components': number_of_features,
+                'classify__C': C_param,
+                'classify__gamma': gamma_param
+            },
+            {
+                'scale': [None, MaxAbsScaler()],
+                'reduce_dim': [SelectKBest()],
+                'reduce_dim__k': number_of_features,
+                'classify__C': C_param,
+                'classify__gamma': gamma_param
+            },
+        ]
+        cv = StratifiedShuffleSplit(random_state=42)
+        grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='f1', n_jobs=-1)
+        features = f.df.as_matrix()[:, 0:-2]
+        labels = f.df.as_matrix()[:, -1]
+        grid.fit(features, labels)
+        test_classifier(grid.best_estimator_, f.df.as_matrix())
+        if dump:
+            dump_classifier_and_data(grid.best_estimator_, f.df.as_matrix(), f.df.columns.values)
+
+
+def decisionTree(orig_dataset=False, fine_tune=False, feature_select=None, folds=1000, dump=False, **kwargs):
+    clf = DecisionTreeClassifier(class_weight={0.: 1, 1.: 4})
+    if orig_dataset:
+        dataset = f.orig_df.as_matrix()
+        test_classifier(clf, dataset, folds)
+        return
+    if not fine_tune:
+        if feature_select not in ['kbest', 'xgboost', 'random_forest', 'xgboost_cv']:
+            dataset = f.df.as_matrix()
+            test_classifier(clf, dataset, folds=folds)
+        else:
+            if feature_select.lower() == 'kbest':
+                k = kwargs.get('k')
+                eval_func = kwargs.get('eval_func')
+                imp_features = imp.get_importance_kBest(k=k, eval_func=eval_func).keys()
+            elif feature_select.lower() == 'xgboost':
+                save = kwargs.get('save')
+                imp_features = imp.get_importance_xgboost(save=save).keys()
+            elif feature_select.lower() == 'random_forest':
+                save = kwargs.get('save')
+                imp_features = imp.get_importance_rf(save=save).keys()
+            else:
+                save = kwargs.get('save')
+                imp_features = imp.get_importance_xgboost(save=save, cv=True).keys()
+            dataset = f.adhoc_feature_parse(columns=imp_features, merge_train_test=True)
+            test_classifier(clf, dataset, folds)
+    else:
+        pipe = Pipeline([('scale', MaxAbsScaler()),
+                         ('reduce_dim', PCA(random_state=42)),
+                         ('classify', DecisionTreeClassifier(class_weight={0.: 1, 1.: 4}, random_state=42))])
+
+        number_of_features = range(2, f.df.shape[1] - 1)
+        max_depth = range(10, 2, -1)
+        presort = [True, False]
+        param_grid = [
+            {
+                'scale': [None, MaxAbsScaler()],
+                'reduce_dim': [PCA(random_state=42)],
+                'reduce_dim__n_components': number_of_features,
+                'classify__max_depth': max_depth,
+                'classify__presort': presort
+            },
+            {
+                'scale': [None, MaxAbsScaler()],
+                'reduce_dim': [SelectKBest()],
+                'reduce_dim__k': number_of_features,
+                'classify__max_depth': max_depth,
+                'classify__presort': presort
+            }
+        ]
+        cv = StratifiedShuffleSplit(random_state=42)
+        grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='precision', n_jobs=-1)
+        features = f.df.as_matrix()[:, 0:-2]
+        labels = f.df.as_matrix()[:, -1]
+        grid.fit(features, labels)
+        test_classifier(grid.best_estimator_, f.df.as_matrix())
+        if dump:
+            dump_classifier_and_data(grid.best_estimator_, f.df.as_matrix(), f.df.columns.values)
+
+
+def nearestCentroid(orig_dataset=False, fine_tune=False, feature_select=None, folds=1000, dump=False, **kwargs):
+    clf = NearestCentroid()
+    if orig_dataset:
+        dataset = f.orig_df.as_matrix()
+        test_classifier(clf, dataset, folds)
+    if not fine_tune:
+        if feature_select not in ['kbest', 'xgboost', 'random_forest', 'xgboost_cv']:
+            dataset = f.df.as_matrix()
+            test_classifier(clf, dataset, folds=folds)
+        else:
+            if feature_select.lower() == 'kbest':
+                k = kwargs.get('k')
+                eval_func = kwargs.get('eval_func')
+                imp_features = imp.get_importance_kBest(k=k, eval_func=eval_func).keys()
+            elif feature_select.lower() == 'xgboost':
+                save = kwargs.get('save')
+                imp_features = imp.get_importance_xgboost(save=save).keys()
+            elif feature_select.lower() == 'random_forest':
+                save = kwargs.get('save')
+                imp_features = imp.get_importance_rf(save=save).keys()
+            else:
+                save = kwargs.get('save')
+                imp_features = imp.get_importance_xgboost(save=save, cv=True).keys()
+            dataset = f.adhoc_feature_parse(columns=imp_features, merge_train_test=True)
+            test_classifier(clf, dataset, folds)
+    else:
+        pipe = Pipeline([('scale', MaxAbsScaler()),
+                         ('reduce_dim', PCA(random_state=42)),
+                         ('classify', NearestCentroid())])
+
+        number_of_features = range(2, f.df.shape[1] - 1)
+        shrink_threshold = [None, 0.1, 0.6, 0.7, 0.8, 0.9, 1, 2, 5, 10]
+        param_grid = [
+            {
+                'scale': [None, MaxAbsScaler(), StandardScaler(), MinMaxScaler()],
+                'reduce_dim': [PCA(random_state=42)],
+                'reduce_dim__n_components': number_of_features,
+                'classify__metric': ["euclidean", "manhattan"],
+                'classify__shrink_threshold': shrink_threshold
+            },
+            {
+                'scale': [None, MaxAbsScaler(), StandardScaler(), MinMaxScaler()],
+                'reduce_dim': [SelectKBest()],
+                'reduce_dim__k': number_of_features,
+                'classify__metric': ["euclidean", "manhattan"],
+                'classify__shrink_threshold': shrink_threshold
+            }
+        ]
+        cv = StratifiedShuffleSplit(random_state=42)
+        grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='precision', n_jobs=-1)
+        features = f.df.as_matrix()[:, 0:-2]
+        labels = f.df.as_matrix()[:, -1]
+        grid.fit(features, labels)
+        test_classifier(grid.best_estimator_, f.df.as_matrix())
+        if dump:
+            dump_classifier_and_data(grid.best_estimator_, f.df.as_matrix(), f.df.columns.values)
 # ------------ Creating a Feature Object ------------ #
 f = feature_loader.FeatureExtract()
 # ------------ Creating a Axillary  feature operation Object ---------- #
@@ -87,14 +310,25 @@ f.df.to_pickle('final_df.pkl')
 # ~~~~~~~~~~~~~~~~~~ Classification ~~~~~~~~~~~~~~~~~~ #
 
 # Model 1
-
 '''
     Feature Selection:
-        algorithm: Random Forest
-        n_estimator: 250
-        random_state: 42
-        number of features: 5
-        cross validation: False
+        Type 1:
+            algorithm: Random Forest
+            n_estimator: 250
+            random_state: 42
+            number of features: 5
+            cross validation: False
+        Type 2:
+            algorithm: XGBoost
+            cross validation: False
+        Type 3:
+            algorithm: SelectKBest
+            k: 5
+            eval_metric: classif
+        Type 4:
+            On the old dataset without
+            feature selection and feature
+            creation.
 
     Feature Scaling:
         None
@@ -105,16 +339,9 @@ f.df.to_pickle('final_df.pkl')
     Classification:
         algo: Gaussian Naive Bayes
 '''
-
-# important_features_rf = imp.get_importance_rf(save=False).keys()
-# dataset_rf = f.adhoc_feature_parse(columns=important_features_rf, merge_train_test=True)
-# clf = GaussianNB()
-# start = timeit.timeit()
-# test_classifier(clf, dataset_rf)
-# print "Elapsed: " + str(timeit.timeit() - start)
+# naive_bayes(feature_select='random_forest', save=False)
 
 # Model 2
-
 '''
     Feature Selection:
         algorithm: XGBoost
@@ -138,16 +365,9 @@ f.df.to_pickle('final_df.pkl')
     Classification:
         algo: AdaBoostClassifier
 '''
-
-# important_features_xgb = imp.get_importance_xgboost(save=False).keys()
-# dataset_xgb = f.adhoc_feature_parse(columns=important_features_xgb, merge_train_test=True)
-# clf = AdaBoostClassifier(DecisionTreeClassifier(min_samples_split=10), random_state=42)
-# start = timeit.timeit()
-# test_classifier(clf, dataset_xgb)
-# print "Elapsed: " + str(timeit.timeit() - start)
+# decisionTree(feature_select='xgboost', save=False)
 
 # Model 3
-
 '''
     Feature Selection:
         algorithm: XGBoost
@@ -171,16 +391,9 @@ f.df.to_pickle('final_df.pkl')
     Classification:
         algo: NearestCentroid
 '''
-
-# important_features_xgb_cv = imp.get_importance_xgboost(save=False, cv=True).keys()
-# dataset_xgb_cv = f.adhoc_feature_parse(columns=important_features_xgb_cv, merge_train_test=True)
-# clf = NearestCentroid(shrink_threshold=0.1)
-# start = timeit.timeit()
-# test_classifier(clf, dataset_xgb_cv)
-# print "Elapsed: " + str(timeit.timeit() - start)
+# nearestCentroid(feature_select='xgboost_cv', save=False)
 
 # Model 4
-
 '''
     Feature Selection:
         algo: K Best
@@ -196,44 +409,7 @@ f.df.to_pickle('final_df.pkl')
     Classification:
         algo: SVC
 '''
-
-# important_features_kbest = imp.get_importance_kBest(k=5, eval_func='classif').keys()
-# dataset_kbest = f.adhoc_feature_parse(columns=important_features_kbest, merge_train_test=True)
-# clf = SVC(C=1000, kernel='rbf', gamma=1)
-# start = timeit.timeit()
-# test_classifier(clf, dataset_kbest)
-# print "Elapsed: " + str(timeit.timeit() - start)
-
-# Model 5
-
-'''
-    Feature Selection:
-        algorithm: XGBoost
-        early_stopping_rounds: 900
-        num_boosting_rounds: 100
-        eval_metric: error@0.7
-        objective: binary:logistic
-        random_state: 42
-        learning_rate: best from CV
-        max_depth: best from CV
-        subsample: best from CV
-        colsample_bytree: best from CV
-        cross validation: True
-
-    Feature Scaling:
-        None
-
-    Cross Validation:
-        None
-
-    Classification:
-        algo: Gradient Boosting
-'''
-
-# start = timeit.timeit()
-# clf = GradientBoostingClassifier()
-# test_classifier(clf, dataset_xgb_cv)
-# print "Elapsed: " + str(timeit.timeit() - start)
+# svc(feature_select='kbest', k=5, eval_func='classif')
 
 
 # ------------- Fine tune Classifiers ------------- #
@@ -259,39 +435,11 @@ Classifier Scores:        Accuracy: 0.83920
                           F1: 0.36826
                           F2: 0.35802
 '''
-# pipe = Pipeline([('scale', MaxAbsScaler()),
-#                  ('reduce_dim', PCA(random_state=42)),
-#                  ('classify', SVC(class_weight={0.: 1, 1.: 3.3}))])
-#
-# number_of_features = range(2, f.df.shape[1] - 1)
-#
-# C_param = [0.1, 1, 10]
-# gamma_param = range(10, 30)
-# param_grid = [
-#     {
-#         'scale': [None, MaxAbsScaler()],
-#         'reduce_dim': [PCA(random_state=42)],
-#         'reduce_dim__n_components': number_of_features,
-#         'classify__C': C_param,
-#         'classify__gamma': gamma_param
-#     },
-#     {
-#         'scale': [None, MaxAbsScaler()],
-#         'reduce_dim': [SelectKBest()],
-#         'reduce_dim__k': number_of_features,
-#         'classify__C': C_param,
-#         'classify__gamma': gamma_param
-#     },
-# ]
-#
-# cv = StratifiedShuffleSplit(random_state=42)
-# grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='f1', n_jobs=-1)
-# features = f.df.as_matrix()[:, 0:-2]
-# labels = f.df.as_matrix()[:, -1]
-# grid.fit(features, labels)
-# test_classifier(grid.best_estimator_, f.df.as_matrix())
-#
-# # >>>>>>>>>>>>>> A better balanced score with Naive Bayes with PCA <<<<<<<<< #
+# With feature creation and feature feature selection using GridSearchCV
+# svc(fine_tune=True, dump=True)
+
+# >>>>>>>>>>>>>> A better balanced score with Naive Bayes with PCA <<<<<<<<< #
+
 '''
 Fine tuned Classifier 2: GaussianNB - This assumes that the
                          features are independent of each other
@@ -311,23 +459,10 @@ Classifier Scores:        Accuracy: 0.87580
                           F1: 0.43970
                           F2: 0.39196
 '''
-# pipe = Pipeline([('scale', MaxAbsScaler()),
-#                  ('reduce_dim', PCA(random_state=42)),
-#                  ('classify', GaussianNB())])
-# number_of_components = range(2, f.df.shape[1] - 1)
-# param_grid = [
-#     {
-#         'scale': [None, MaxAbsScaler()],
-#         'reduce_dim__n_components': number_of_components
-#     }
-# ]
-# cv = StratifiedShuffleSplit(random_state=42)
-# grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='f1', n_jobs=-1)
-# features = f.df.as_matrix()[:, 0:-2]
-# labels = f.df.as_matrix()[:, -1]
-# grid.fit(features, labels)
-# test_classifier(grid.best_estimator_, f.df.as_matrix())
+# With feature creation and feature feature selection using GridSearchCV
+# naive_bayes(fine_tune=True, dump=True)
 
+# >>>>>>>>>>>>> Decision Tree is said to perform better with cross validation <<<<<<<< #
 '''
 Fine tuned Classifier 3: DecisionTreeClassifier - Decision Tree
                          said to perform better for biased dataset
@@ -344,38 +479,10 @@ Classifier Scores:        Accuracy: 0.85140
                           F1: 0.47117
                           F2: 0.48605
 '''
-# pipe = Pipeline([('scale', MaxAbsScaler()),
-#                  ('reduce_dim', PCA(random_state=42)),
-#                  ('classify', DecisionTreeClassifier(class_weight={0.: 1, 1.: 4}, random_state=42))])
-#
-# number_of_features = range(2, f.df.shape[1] - 1)
-# learning_rate = [0.01, 0.05, 0.3]
-# max_depth = range(10, 2, -1)
-# presort = [True, False]
-# param_grid = [
-#     {
-#         'scale': [None, MaxAbsScaler()],
-#         'reduce_dim': [PCA(random_state=42)],
-#         'reduce_dim__n_components': number_of_features,
-#         'classify__max_depth': max_depth,
-#         'classify__presort': presort
-#     },
-#     {
-#         'scale': [None, MaxAbsScaler()],
-#         'reduce_dim': [SelectKBest()],
-#         'reduce_dim__k': number_of_features,
-#         'classify__max_depth': max_depth,
-#         'classify__presort': presort
-#     }
-# ]
-# cv = StratifiedShuffleSplit(random_state=42)
-# grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='precision', n_jobs=-1)
-# features = f.df.as_matrix()[:, 0:-2]
-# labels = f.df.as_matrix()[:, -1]
-# grid.fit(features, labels)
-# test_classifier(grid.best_estimator_, f.df.as_matrix())
-# >>>>>>>>>>>>>>> The best Result <<<<<<<<<<<<< #
+# With feature creation and feature feature selection using GridSearchCV
+# decisionTree(fine_tune=True, dump=True)
 
+# >>>>>>>>>>>>>>> The best Result <<<<<<<<<<<<< #
 '''
 Fine tuned Classifier 3: NearestCentroid - Any KNN or similar
                          algorithms are slow learners and they
@@ -406,33 +513,5 @@ Classifier Scores:        Accuracy: 0.82367
                           F1: 0.51883
                           F2: 0.62016
 '''
-
-# pipe = Pipeline([('scale', MaxAbsScaler()),
-#                  ('reduce_dim', PCA(random_state=42)),
-#                  ('classify', NearestCentroid())])
-#
-# number_of_features = range(2, f.df.shape[1] - 1)
-# shrink_threshold = [None, 0.1, 0.6, 0.7, 0.8, 0.9, 1, 2, 5, 10]
-# param_grid = [
-#     {
-#         'scale': [None, MaxAbsScaler(), StandardScaler(), MinMaxScaler()],
-#         'reduce_dim': [PCA(random_state=42)],
-#         'reduce_dim__n_components': number_of_features,
-#         'classify__metric': ["euclidean", "manhattan"],
-#         'classify__shrink_threshold': shrink_threshold
-#     },
-#     {
-#         'scale': [None, MaxAbsScaler(), StandardScaler(), MinMaxScaler()],
-#         'reduce_dim': [SelectKBest()],
-#         'reduce_dim__k': number_of_features,
-#         'classify__metric': ["euclidean", "manhattan"],
-#         'classify__shrink_threshold': shrink_threshold
-#     }
-# ]
-# cv = StratifiedShuffleSplit(random_state=42)
-# grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring='precision', n_jobs=-1)
-# features = f.df.as_matrix()[:, 0:-2]
-# labels = f.df.as_matrix()[:, -1]
-# grid.fit(features, labels)
-# test_classifier(grid.best_estimator_, f.df.as_matrix())
-# dump_classifier_and_data(grid.best_estimator_, f.df.as_matrix(), f.df.columns.values)
+# With feature creation and feature feature selection using GridSearchCV
+nearestCentroid(fine_tune=True, dump=True)

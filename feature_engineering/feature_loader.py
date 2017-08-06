@@ -1,3 +1,4 @@
+from copy import deepcopy
 import pickle
 import pandas as pd
 import numpy as np
@@ -62,6 +63,7 @@ class FeatureExtract(Features):
         labels, features = self._parse_features(featureList)
         self.df = pd.DataFrame(features, columns=self.featureList[1::])
         self.df[FeatureExtract.targetCol] = np.array(labels, dtype=int)
+        self.orig_df = deepcopy(self.df)
         # self.feature_splits()
         # self.df = self.df_train.append(self.df_test)
 

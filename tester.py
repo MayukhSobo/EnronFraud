@@ -11,7 +11,7 @@
 """
 
 import pickle
-from sklearn.cross_validation import StratifiedShuffleSplit
+from sklearn.model_selection import StratifiedShuffleSplit
 
 # sys.path.append("../feature_engineering/")
 # from feature_format import featureFormat, targetFeatureSplit
@@ -29,12 +29,12 @@ def test_classifier(clf, dataset, folds=1000):
     labels = dataset[:, -1]
     labels = labels.astype(int)
     features = dataset[:, 0:-2]
-    cv = StratifiedShuffleSplit(labels, folds, random_state=42)
+    cv = StratifiedShuffleSplit(folds, random_state=42)
     true_negatives = 0
     false_negatives = 0
     true_positives = 0
     false_positives = 0
-    for train_idx, test_idx in cv:
+    for train_idx, test_idx in cv.split(features, labels):
         features_train = []
         features_test = []
         labels_train = []
@@ -106,10 +106,10 @@ def load_classifier_and_data():
 
 
 def main():
-    ### load up student's classifier, dataset, and feature_list
+    # ## load up student's classifier, dataset, and feature_list
     clf, dataset, feature_list = load_classifier_and_data()
-    ### Run testing script
-    test_classifier(clf, dataset, feature_list)
+    # ## Run testing script
+    test_classifier(clf, dataset)
 
 
 if __name__ == '__main__':
