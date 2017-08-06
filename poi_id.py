@@ -301,9 +301,9 @@ f.feature_splits()
 # -------------- Feature Selection ---------------- #
 #
 imp = feature_importance.Importance(algo='*', fObj=f)
-# print imp.get_importance_rf(save=True, file_path='importance_random_forest.png')
-# print imp.get_importance_xgboost(save=True, file_path='importance_xgboost.png')
-# print imp.get_importance_kBest(k=5, eval_func='classif').keys()
+# print imp.get_importance_rf(save=False)
+# print imp.get_importance_xgboost(save=False, cv=True)
+# print imp.get_importance_kBest(k=5, eval_func='classif')
 
 f.df.to_pickle('final_df.pkl')
 
@@ -339,6 +339,7 @@ f.df.to_pickle('final_df.pkl')
     Classification:
         algo: Gaussian Naive Bayes
 '''
+# naive_bayes(orig_dataset=True)
 # naive_bayes(feature_select='random_forest', save=False)
 
 # Model 2
@@ -391,6 +392,7 @@ f.df.to_pickle('final_df.pkl')
     Classification:
         algo: NearestCentroid
 '''
+# nearestCentroid(orig_dataset=True)
 # nearestCentroid(feature_select='xgboost_cv', save=False)
 
 # Model 4

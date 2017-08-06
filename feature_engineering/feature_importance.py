@@ -38,7 +38,7 @@ class Importance:
 
         # Default XGB parameters
 
-        num_boost_round = 100
+        num_boost_round = 1000
         X_train = self.train_data.drop(['poi'], axis=1)
         y_train = self.train_data.loc[:, 'poi'].values
         xgb_params = {
@@ -82,8 +82,8 @@ class Importance:
                 'colsample_bytree': list(np.arange(0.01, 0.1, 0.01))
                 # 'gamma': range(10, 16)
             }
-            _clf = xgb.XGBClassifier(xgb_params, num_boost_round=100)
-            clf = GridSearchCV(_clf, parameters, n_jobs=4, cv=7, scoring='average_precision')
+            _clf = xgb.XGBClassifier(xgb_params, num_boost_round=1000)
+            clf = GridSearchCV(_clf, parameters, n_jobs=4, cv=7, scoring='f1')
             clf.fit(np.array(X_train), y_train)
             best_learning_rate = clf.best_estimator_.learning_rate
             best_max_depth = clf.best_estimator_.max_depth
@@ -92,7 +92,7 @@ class Importance:
             xgb_params['max_depth'] = best_max_depth
             xgb_params['subsample'] = best_subsample
             dtrain = xgb.DMatrix(X_train, y_train, feature_names=self.features)
-            gbdt = xgb.train(xgb_params, dtrain, num_boost_round=100)
+            gbdt = xgb.train(xgb_params, dtrain, num_boost_round=1000)
             importance = sorted(gbdt.get_fscore().iteritems(), key=operator.itemgetter(1), reverse=True)
         if not save:
             return OrderedDict(importance[:k])
